@@ -325,133 +325,17 @@ export default function Home() {
             <CardTitle className="font-[family-name:var(--font-orbitron)]">Generate Images</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                id="replicate_model" 
-                label="Model" 
-                tooltip="Select the specific Replicate model to use for generation." 
-              />
-              <Select 
-                value={replicateModelId} 
-                onValueChange={(val: string) => {
-                  setReplicateModelId(val)
-                  if (val === "custom" && !customModelId) {
-                    setCustomModelId("black-forest-labs/flux-dev")
-                  }
-                }}
-              >
-                <SelectTrigger id="replicate_model">
-                  <SelectValue placeholder="Select model" />
-                </SelectTrigger>
-                <SelectContent>
-                  {AVAILABLE_MODELS.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>
-                      {m.name}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="custom">Other (Custom ID)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {replicateModelId === "custom" && (
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="custom_model_id" 
-                  label="Custom Model ID" 
-                  tooltip="Enter the full Replicate model ID (e.g., owner/model:version)" 
-                />
-                <Input 
-                  id="custom_model_id" 
-                  placeholder="owner/model:version" 
-                  value={customModelId}
-                  onChange={(e) => setCustomModelId(e.target.value)}
-                />
+            <div className="flex items-end gap-4">
+              <div className="space-y-2 flex-1">
+                <Label>Trigger</Label>
+                <p className="font-[family-name:var(--font-orbitron)] text-sm">trigger word {triggerWord}</p>
               </div>
-            )}
-
-            <div className="space-y-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <LabelWithTooltip 
-                  id="prompt" 
-                  label="Prompt" 
-                  tooltip="Prompt for generated image. If you include the `trigger_word` used in the training process you are more likely to activate the trained object, style, or concept in the resulting image." 
+              <div className="space-y-2 w-32">
+                <LabelWithTooltip
+                  id="num_outputs"
+                  label="Num Outputs"
+                  tooltip="Number of outputs to generate"
                 />
-                <span className="text-sm text-muted-foreground">
-                  Trigger word: <span className="font-mono font-bold text-primary">{triggerWord}</span>
-                </span>
-              </div>
-              <Textarea 
-                id="prompt" 
-                placeholder="Enter your prompt here..." 
-                className="h-24" 
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <Field data-invalid={pictureInvalid ? "" : undefined}>
-                <FieldLabel htmlFor="picture">
-                  Reference Image (Optional)
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs text-sm">
-                      <p>Upload 1 reference image max for better quality.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </FieldLabel>
-                <Input
-                  id="picture"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  aria-invalid={pictureInvalid || undefined}
-                  disabled={!!picture}
-                  onChange={(e) => {
-                    const f = e.target.files?.[0]
-                    if (!f) return
-                    const ext = f.name.split(".").pop()?.toLowerCase()
-                    if (!["jpg", "jpeg", "png", "webp"].includes(ext ?? "")) {
-                      setPictureInvalid(true)
-                      return
-                    }
-                    setPictureInvalid(false)
-                    const reader = new FileReader()
-                    reader.onloadend = () => setPicture(reader.result as string)
-                    reader.readAsDataURL(f)
-                    e.target.value = ""
-                  }}
-                />
-                <FieldDescription>Select a picture to upload.</FieldDescription>
-                {picture && (
-                  <div className="flex flex-wrap gap-2">
-                    <div className="relative h-20 w-20">
-                      <img src={picture} alt="" className="h-20 w-20 rounded-md border object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setPicture(null)}
-                        className="absolute -right-2 -top-2 rounded-full border bg-background p-0.5 shadow-sm"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="num_outputs">
-                  Num Outputs
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs text-sm">
-                      <p>Number of outputs to generate</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </FieldLabel>
                 <Input
                   id="num_outputs"
                   type="number"
@@ -460,9 +344,73 @@ export default function Home() {
                   value={numOutputs}
                   onChange={(e) => setNumOutputs(parseInt(e.target.value))}
                 />
-                <FieldDescription>Number of outputs to generate.</FieldDescription>
-              </Field>
+              </div>
             </div>
+
+            <div className="space-y-2">
+              <LabelWithTooltip
+                id="prompt"
+                label="Prompt"
+                tooltip="Prompt for generated image. If you include the `trigger_word` used in the training process you are more likely to activate the trained object, style, or concept in the resulting image."
+              />
+              <Textarea
+                id="prompt"
+                placeholder="Enter your prompt here..."
+                className="h-24"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+              />
+            </div>
+
+            <Field data-invalid={pictureInvalid ? "" : undefined}>
+              <FieldLabel htmlFor="picture">
+                Reference Image (Optional)
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-sm">
+                    <p>Upload 1 reference image max for better quality.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </FieldLabel>
+              <Input
+                id="picture"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                aria-invalid={pictureInvalid || undefined}
+                disabled={!!picture}
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (!f) return
+                  const ext = f.name.split(".").pop()?.toLowerCase()
+                  if (!["jpg", "jpeg", "png", "webp"].includes(ext ?? "")) {
+                    setPictureInvalid(true)
+                    return
+                  }
+                  setPictureInvalid(false)
+                  const reader = new FileReader()
+                  reader.onloadend = () => setPicture(reader.result as string)
+                  reader.readAsDataURL(f)
+                  e.target.value = ""
+                }}
+              />
+              <FieldDescription>Select a picture to upload.</FieldDescription>
+              {picture && (
+                <div className="flex flex-wrap gap-2">
+                  <div className="relative h-20 w-20">
+                    <img src={picture} alt="" className="h-20 w-20 rounded-md border object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setPicture(null)}
+                      className="absolute -right-2 -top-2 rounded-full border bg-background p-0.5 shadow-sm"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </Field>
           </CardContent>
           <CardFooter className="flex-col gap-4 justify-center pb-6">
             <Button
