@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { Info, ImageIcon, Loader2, Download, Link as LinkIcon, X } from "lucide-react"
 import { HugeiconsShareIcon } from "@/components/ui/hugeicons-share"
 import Lightbox from "yet-another-react-lightbox"
@@ -33,14 +33,14 @@ function LabelWithTooltip({ id, label, tooltip }: { id?: string, label: string, 
   return (
     <div className="flex items-center gap-2">
       <Label htmlFor={id}>{label}</Label>
-      <Popover>
-        <PopoverTrigger asChild>
+      <Tooltip>
+        <TooltipTrigger asChild>
           <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-        </PopoverTrigger>
-        <PopoverContent className="w-auto max-w-xs text-sm">
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs text-sm">
           <p>{tooltip}</p>
-        </PopoverContent>
-      </Popover>
+        </TooltipContent>
+      </Tooltip>
     </div>
   )
 }
@@ -371,7 +371,17 @@ export default function Home() {
             
             <div className="grid grid-cols-2 gap-4">
               <Field data-invalid={pictureInvalid ? "" : undefined}>
-                <FieldLabel htmlFor="picture">Picture</FieldLabel>
+                <FieldLabel htmlFor="picture">
+                  Reference Image (Optional)
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-sm">
+                      <p>Upload 1 reference image max for better quality.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </FieldLabel>
                 <Input
                   id="picture"
                   type="file"
@@ -408,7 +418,17 @@ export default function Home() {
                 )}
               </Field>
               <Field>
-                <FieldLabel htmlFor="num_outputs">Num Outputs</FieldLabel>
+                <FieldLabel htmlFor="num_outputs">
+                  Num Outputs
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-sm">
+                      <p>Number of outputs to generate</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </FieldLabel>
                 <Input
                   id="num_outputs"
                   type="number"
@@ -530,7 +550,17 @@ export default function Home() {
               />
             </div>
             <Field data-invalid={editPictureInvalid ? "" : undefined}>
-              <FieldLabel htmlFor="picture_edit">Picture</FieldLabel>
+              <FieldLabel htmlFor="picture_edit">
+                Picture
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-sm">
+                    <p>Up to 4 images for better quality. Some models may allow fewer, some more.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </FieldLabel>
               <Input
                 id="picture_edit"
                 type="file"
