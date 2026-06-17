@@ -17,15 +17,8 @@ export async function generateImage(formData: FormData) {
   const height = parseInt(formData.get("height") as string)
   const megapixels = formData.get("megapixels") as string
   const outputQuality = parseInt(formData.get("output_quality") as string)
-  const guidanceScale = parseFloat(formData.get("guidance_scale") as string)
-  const numInferenceSteps = parseInt(formData.get("num_inference_steps") as string)
-  const seed = formData.get("seed") ? parseInt(formData.get("seed") as string) : undefined
-  const goFast = formData.get("go_fast") === "on"
   const disableSafetyChecker = formData.get("disable_safety_checker") === "on"
   const promptStrength = parseFloat(formData.get("prompt_strength") as string)
-  const extraLora = formData.get("extra_lora") as string
-  const loraScale = parseFloat(formData.get("lora_scale") as string)
-  const extraLoraScale = parseFloat(formData.get("extra_lora_scale") as string)
 
   const input: any = {
     prompt,
@@ -35,13 +28,8 @@ export async function generateImage(formData: FormData) {
     num_outputs: numOutputs,
     megapixels,
     output_quality: outputQuality,
-    guidance_scale: guidanceScale,
-    num_inference_steps: numInferenceSteps,
-    go_fast: goFast,
     disable_safety_checker: disableSafetyChecker,
     prompt_strength: promptStrength,
-    lora_scale: loraScale,
-    extra_lora_scale: extraLoraScale,
   }
 
   if (aspectRatio === "custom") {
@@ -49,8 +37,6 @@ export async function generateImage(formData: FormData) {
     input.height = height
   }
 
-  if (seed) input.seed = seed
-  if (extraLora) input.extra_lora = extraLora
 
   try {
     const output = await replicate.run(

@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -70,15 +69,8 @@ export default function Home() {
   const [outputFormat, setOutputFormat] = useState("webp")
   const [megapixels, setMegapixels] = useState("1")
   const [outputQuality, setOutputQuality] = useState(80)
-  const [guidanceScale, setGuidanceScale] = useState(3)
-  const [numInferenceSteps, setNumInferenceSteps] = useState(28)
-  const [seed, setSeed] = useState<number | undefined>(undefined)
-  const [goFast, setGoFast] = useState(false)
   const [disableSafetyChecker] = useState(true)
   const [promptStrength, setPromptStrength] = useState(0.8)
-  const [extraLora, setExtraLora] = useState("")
-  const [loraScale, setLoraScale] = useState(1)
-  const [extraLoraScale, setExtraLoraScale] = useState(1)
 
   const getDimensions = () => {
     if (aspectRatio === "custom") return { w: width, h: height }
@@ -118,15 +110,8 @@ export default function Home() {
     formData.append("height", height.toString())
     formData.append("megapixels", megapixels)
     formData.append("output_quality", outputQuality.toString())
-    formData.append("guidance_scale", guidanceScale.toString())
-    formData.append("num_inference_steps", numInferenceSteps.toString())
-    if (seed) formData.append("seed", seed.toString())
-    if (goFast) formData.append("go_fast", "on")
     if (disableSafetyChecker) formData.append("disable_safety_checker", "on")
     formData.append("prompt_strength", promptStrength.toString())
-    if (extraLora) formData.append("extra_lora", extraLora)
-    formData.append("lora_scale", loraScale.toString())
-    formData.append("extra_lora_scale", extraLoraScale.toString())
 
     const result = await generateImage(formData)
 
@@ -271,10 +256,10 @@ export default function Home() {
     <div className="flex flex-col w-full">
       <div className="container mx-auto py-10 px-[10px] space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Card 1: Prompt & Model Settings */}
+        {/* Card 1: Generate Images */}
         <Card className="h-full">
           <CardHeader>
-            <CardTitle className="font-[family-name:var(--font-orbitron)]">Prompt & Model</CardTitle>
+            <CardTitle className="font-[family-name:var(--font-orbitron)]">Generate Images</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
             <div className="space-y-2">
@@ -351,14 +336,7 @@ export default function Home() {
                 />
                 <Select 
                   value={model} 
-                  onValueChange={(val: string) => {
-                    setModel(val)
-                    if (val === "schnell") {
-                      setNumInferenceSteps(4)
-                    } else {
-                      setNumInferenceSteps(28)
-                    }
-                  }}
+                  onValueChange={(val: string) => setModel(val)}
                 >
                   <SelectTrigger id="model">
                     <SelectValue placeholder="Select model" />
@@ -391,231 +369,110 @@ export default function Home() {
           </CardFooter>
         </Card>
 
-        {/* Card 2: Dimensions & Quality */}
+        {/* Card 2: Edit Images */}
         <Card className="h-full">
           <CardHeader>
-            <CardTitle className="font-[family-name:var(--font-orbitron)]">Dimensions & Quality</CardTitle>
+            <CardTitle className="font-[family-name:var(--font-orbitron)]">Edit Images</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="aspect_ratio" 
-                  label="Aspect Ratio" 
-                  tooltip="Aspect ratio for the generated image. If custom is selected, uses height and width below & will run in bf16 mode" 
-                />
-                <Select value={aspectRatio} onValueChange={setAspectRatio}>
-                  <SelectTrigger id="aspect_ratio">
-                    <SelectValue placeholder="Select ratio" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1:1">1:1</SelectItem>
-                    <SelectItem value="16:9">16:9</SelectItem>
-                    <SelectItem value="21:9">21:9</SelectItem>
-                    <SelectItem value="3:2">3:2</SelectItem>
-                    <SelectItem value="2:3">2:3</SelectItem>
-                    <SelectItem value="4:5">4:5</SelectItem>
-                    <SelectItem value="5:4">5:4</SelectItem>
-                    <SelectItem value="3:4">3:4</SelectItem>
-                    <SelectItem value="4:3">4:3</SelectItem>
-                    <SelectItem value="9:16">9:16</SelectItem>
-                    <SelectItem value="9:21">9:21</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="output_format" 
-                  label="Format" 
-                  tooltip="Format of the output images" 
-                />
-                <Select value={outputFormat} onValueChange={setOutputFormat}>
-                  <SelectTrigger id="output_format">
-                    <SelectValue placeholder="Select format" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="webp">WebP</SelectItem>
-                    <SelectItem value="jpg">JPG</SelectItem>
-                    <SelectItem value="png">PNG</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="width" 
-                  label="Width" 
-                  tooltip="Width of generated image. Only works if `aspect_ratio` is set to custom. Will be rounded to nearest multiple of 16. Incompatible with fast generation" 
-                />
-                <Input 
-                  id="width" 
-                  type="number" 
-                  placeholder="1024" 
-                  min={256} 
-                  max={1440} 
-                  step={16} 
-                  value={width}
-                  onChange={(e) => setWidth(parseInt(e.target.value) || 1024)}
-                />
-              </div>
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="height" 
-                  label="Height" 
-                  tooltip="Height of generated image. Only works if `aspect_ratio` is set to custom. Will be rounded to nearest multiple of 16. Incompatible with fast generation" 
-                />
-                <Input 
-                  id="height" 
-                  type="number" 
-                  placeholder="1024" 
-                  min={256} 
-                  max={1440} 
-                  step={16} 
-                  value={height}
-                  onChange={(e) => setHeight(parseInt(e.target.value) || 1024)}
-                />
-              </div>
-            </div>
-
             <div className="space-y-2">
               <LabelWithTooltip 
-                id="megapixels" 
-                label="Megapixels" 
-                tooltip="Approximate number of megapixels for generated image" 
+                id="replicate_model" 
+                label="Replicate Model" 
+                tooltip="Select the specific Replicate model to use for generation." 
               />
-              <Select value={megapixels} onValueChange={setMegapixels}>
-                <SelectTrigger id="megapixels">
-                  <SelectValue placeholder="Select megapixels" />
+              <Select 
+                value={replicateModelId} 
+                onValueChange={(val: string) => {
+                  setReplicateModelId(val)
+                  if (val === "custom" && !customModelId) {
+                    setCustomModelId("black-forest-labs/flux-dev")
+                  }
+                }}
+              >
+                <SelectTrigger id="replicate_model">
+                  <SelectValue placeholder="Select model" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">1 MP</SelectItem>
-                  <SelectItem value="0.25">0.25 MP</SelectItem>
+                  {AVAILABLE_MODELS.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>
+                      {m.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="custom">Other (Custom ID)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                label={`Output Quality (${outputQuality})`}
-                tooltip="Quality when saving the output images, from 0 to 100. 100 is best quality, 0 is lowest quality. Not relevant for .png outputs" 
-              />
-              <Slider 
-                value={[outputQuality]} 
-                onValueChange={(vals: number[]) => setOutputQuality(vals[0])} 
-                max={100} 
-                step={1} 
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="justify-center pb-6">
-            <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
-          </CardFooter>
-        </Card>
-
-        {/* Card 3: Advanced Generation */}
-        <Card className="h-full">
-          <CardHeader>
-            <CardTitle className="font-[family-name:var(--font-orbitron)]">Advanced Generation</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 flex-1">
-            <div className="space-y-2">
-              <LabelWithTooltip  
-                label={`Guidance Scale (${guidanceScale})`}
-                tooltip="Guidance scale for the diffusion process. Lower values can give more realistic images. Good values to try are 2, 2.5, 3 and 3.5. Ignored for Schnell model." 
-              />
-              <Slider 
-                value={[guidanceScale]} 
-                onValueChange={(vals: number[]) => setGuidanceScale(vals[0])} 
-                max={10} 
-                step={0.1} 
-                disabled={model === "schnell"}
-                className={model === "schnell" ? "opacity-50 cursor-not-allowed" : ""}
-              />
-            </div>
+            {replicateModelId === "custom" && (
+              <div className="space-y-2">
+                <LabelWithTooltip 
+                  id="custom_model_id" 
+                  label="Custom Model ID" 
+                  tooltip="Enter the full Replicate model ID (e.g., owner/model:version)" 
+                />
+                <Input 
+                  id="custom_model_id" 
+                  placeholder="owner/model:version" 
+                  value={customModelId}
+                  onChange={(e) => setCustomModelId(e.target.value)}
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
-              <LabelWithTooltip 
-                label={`Inference Steps (${numInferenceSteps})`}
-                tooltip="Number of denoising steps. More steps can give more detailed images, but take longer." 
-              />
-              <Slider 
-                value={[numInferenceSteps]} 
-                onValueChange={(vals: number[]) => setNumInferenceSteps(vals[0])} 
-                max={model === "schnell" ? 4 : 50} 
-                step={1} 
-              />
-            </div>
-
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                id="seed" 
-                label="Seed" 
-                tooltip="Random seed. Set for reproducible generation" 
-              />
-              <Input 
-                id="seed" 
-                type="number" 
-                placeholder="Random" 
-                value={seed || ""}
-                onChange={(e) => setSeed(e.target.value ? parseInt(e.target.value) : undefined)}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <LabelWithTooltip 
+                  id="prompt" 
+                  label="Prompt" 
+                  tooltip="Prompt for generated image. If you include the `trigger_word` used in the training process you are more likely to activate the trained object, style, or concept in the resulting image." 
+                />
+                <span className="text-sm text-muted-foreground">
+                  Trigger word: <span className="font-mono font-bold text-primary">FAMOSOFLUXO</span>
+                </span>
+              </div>
+              <Textarea 
+                id="prompt" 
+                placeholder="Enter your prompt here..." 
+                className="h-24" 
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
               />
             </div>
-
-            <div className="flex items-center justify-between">
-              <LabelWithTooltip 
-                id="go_fast" 
-                label="Go Fast Mode" 
-                tooltip="Run faster predictions with model optimized for speed (currently fp8 quantized); disable to run in original bf16" 
-              />
-              <Switch 
-                id="go_fast" 
-                checked={goFast}
-                onCheckedChange={setGoFast}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <LabelWithTooltip
-                id="extra_lora"
-                label="Extra LoRA" 
-                tooltip="Load LoRA weights. Supports Replicate models in the format <owner>/<username> or <owner>/<username>/<version>, HuggingFace URLs in the format huggingface.co/<owner>/<model-name>, CivitAI URLs in the format civitai.com/models/<id>[/<model-name>], or arbitrary .safetensors URLs from the Internet. For example, 'fofr/flux-pixar-cars'" 
-              />
-              <Input 
-                id="extra_lora" 
-                placeholder="owner/model" 
-                value={extraLora}
-                onChange={(e) => setExtraLora(e.target.value)}
-              />
-            </div>
-
+            
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <LabelWithTooltip 
-                  label={`LoRA Scale (${loraScale})`}
-                  tooltip="Determines how strongly the main LoRA should be applied. Sane results between 0 and 1 for base inference. For go_fast we apply a 1.5x multiplier to this value; we've generally seen good performance when scaling the base value by that amount. You may still need to experiment to find the best value for your particular lora." 
+                  id="model" 
+                  label="Flux Mode" 
+                  tooltip="Which version of Flux to run inference with. 'Dev' is higher quality (slower), 'Schnell' is faster (lower quality)." 
                 />
-                <Slider 
-                  value={[loraScale]} 
-                  onValueChange={(vals: number[]) => setLoraScale(vals[0])} 
-                  min={-1} 
-                  max={3} 
-                  step={0.1} 
-                />
+                <Select 
+                  value={model} 
+                  onValueChange={(val: string) => setModel(val)}
+                >
+                  <SelectTrigger id="model">
+                    <SelectValue placeholder="Select model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dev">Dev</SelectItem>
+                    <SelectItem value="schnell">Schnell</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <LabelWithTooltip 
-                  label={`Extra LoRA Scale (${extraLoraScale})`}
-                  tooltip="Determines how strongly the extra LoRA should be applied." 
+                  id="num_outputs" 
+                  label="Num Outputs" 
+                  tooltip="Number of outputs to generate" 
                 />
-                <Slider 
-                  value={[extraLoraScale]} 
-                  onValueChange={(vals: number[]) => setExtraLoraScale(vals[0])} 
-                  min={-1} 
-                  max={3} 
-                  step={0.1} 
+                <Input 
+                  id="num_outputs" 
+                  type="number" 
+                  min={1} 
+                  max={4} 
+                  value={numOutputs}
+                  onChange={(e) => setNumOutputs(parseInt(e.target.value) || 1)}
                 />
               </div>
             </div>
