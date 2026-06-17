@@ -12,7 +12,8 @@ import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Info, ImageIcon, Loader2, Download, Upload, Link as LinkIcon, X, Sparkles, Share2 } from "lucide-react"
+import { Info, ImageIcon, Loader2, Download, Upload, Link as LinkIcon, X, Sparkles } from "lucide-react"
+import { HugeiconsShareIcon } from "@/components/ui/hugeicons-share"
 import Lightbox from "yet-another-react-lightbox"
 import "yet-another-react-lightbox/styles.css"
 import { toast } from "sonner"
@@ -368,7 +369,7 @@ export default function Home() {
       if (shareUrl) {
         try {
           await navigator.share({
-            title: 'GoKAnI AI Generation',
+            title: 'image-gen',
             text: 'Check out this image I generated with GoKAnI AI!',
             url: shareUrl
           })
@@ -809,7 +810,7 @@ export default function Home() {
         <Button 
           size="lg" 
           className={cn(
-            "w-full max-w-md text-2xl py-6 h-auto shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] transition-transform active:scale-95",
+            "w-full max-w-md font-[family-name:var(--font-rock-salt)] text-2xl md:text-[2rem] py-6 h-auto shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] transition-transform active:scale-95",
             isLoading && "opacity-50 cursor-not-allowed active:scale-100"
           )}
           onClick={handleGenerate}
@@ -823,7 +824,7 @@ export default function Home() {
           ) : (
             <>
               <Sparkles className="mr-2 h-6 w-6" />
-              GENERATE
+              GENERATE NOW
               <Sparkles className="ml-2 h-6 w-6" />
             </>
           )}
@@ -879,7 +880,7 @@ export default function Home() {
                       className="flex-1"
                       onClick={() => handleShare(src, i)}
                     >
-                      <Share2 className="mr-2 h-4 w-4" />
+                      <HugeiconsShareIcon className="mr-2" />
                       Share
                     </Button>
                   </div>

@@ -18,5 +18,7 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "registries": {}
+  "registries": {
+    "@icons-animated": "https://icons.lndev.me/r/{name}.json"
+  }
 }
