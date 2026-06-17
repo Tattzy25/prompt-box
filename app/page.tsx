@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Info, ImageIcon, Loader2, Download, Upload, Link as LinkIcon, X, Sparkles } from "lucide-react"
+import { Info, ImageIcon, Loader2, Download, Upload, Link as LinkIcon, X } from "lucide-react"
 import { HugeiconsShareIcon } from "@/components/ui/hugeicons-share"
 import Lightbox from "yet-another-react-lightbox"
 import "yet-another-react-lightbox/styles.css"
@@ -822,11 +822,7 @@ export default function Home() {
               GENERATING...
             </>
           ) : (
-            <>
-              <Sparkles className="mr-2 h-6 w-6" />
-              GENERATE NOW
-              <Sparkles className="ml-2 h-6 w-6" />
-            </>
+            "GENERATE NOW"
           )}
         </Button>
       </div>
