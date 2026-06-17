@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
@@ -66,6 +66,10 @@ export default function Home() {
   const [replicateModelId, setReplicateModelId] = useState(AVAILABLE_MODELS[0].id)
   const [customModelId, setCustomModelId] = useState("")
   const [prompt, setPrompt] = useState("")
+  const [triggerWord, setTriggerWord] = useState("")
+  const [customerId, setCustomerId] = useState("")
+  const [version, setVersion] = useState("")
+  const [sourceId, setSourceId] = useState<number | null>(null)
   const [outputFormat, setOutputFormat] = useState("webp")
   const [megapixels, setMegapixels] = useState("1")
   const [outputQuality, setOutputQuality] = useState(80)
@@ -95,6 +99,15 @@ export default function Home() {
     return { aspectRatio: `${w} / ${h}` }
   }
 
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search)
+    setTriggerWord(q.get("trigger_word") ?? "")
+    setCustomerId(q.get("customer_id") ?? "")
+    setVersion(q.get("version") ?? "")
+    const sid = q.get("source_id")
+    setSourceId(sid ? Number(sid) : null)
+  }, [])
+
   const handleGenerate = async () => {
     if (isLoading) return // Prevent double clicks
     
@@ -121,6 +134,10 @@ export default function Home() {
     formData.append("output_quality", outputQuality.toString())
     if (disableSafetyChecker) formData.append("disable_safety_checker", "on")
     formData.append("prompt_strength", promptStrength.toString())
+
+    formData.append("customer_id", customerId)
+    formData.append("version", version)
+    formData.append("source_id", sourceId?.toString() ?? "")
 
     const result = await generateImage(formData)
 
@@ -156,6 +173,10 @@ export default function Home() {
     formData.append("output_quality", outputQuality.toString())
     if (disableSafetyChecker) formData.append("disable_safety_checker", "on")
     formData.append("prompt_strength", promptStrength.toString())
+    formData.append("customer_id", customerId)
+    formData.append("version", version)
+    formData.append("source_id", sourceId?.toString() ?? "")
+
     const result = await generateImage(formData)
     if (result.success) {
       setGeneratedImages(Array.isArray(result.output) ? result.output : [result.output])
@@ -307,7 +328,7 @@ export default function Home() {
             <div className="space-y-2">
               <LabelWithTooltip 
                 id="replicate_model" 
-                label="Replicate Model" 
+                label="Model" 
                 tooltip="Select the specific Replicate model to use for generation." 
               />
               <Select 
@@ -357,7 +378,7 @@ export default function Home() {
                   tooltip="Prompt for generated image. If you include the `trigger_word` used in the training process you are more likely to activate the trained object, style, or concept in the resulting image." 
                 />
                 <span className="text-sm text-muted-foreground">
-                  Trigger word: <span className="font-mono font-bold text-primary">FAMOSOFLUXO</span>
+                  Trigger word: <span className="font-mono font-bold text-primary">{triggerWord}</span>
                 </span>
               </div>
               <Textarea 
@@ -405,15 +426,17 @@ export default function Home() {
                 />
                 <FieldDescription>Select a picture to upload.</FieldDescription>
                 {picture && (
-                  <div className="relative h-20 w-20">
-                    <img src={picture} alt="" className="h-20 w-20 rounded-md border object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => setPicture(null)}
-                      className="absolute -right-2 -top-2 rounded-full border bg-background p-0.5 shadow-sm"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                  <div className="flex flex-wrap gap-2">
+                    <div className="relative h-20 w-20">
+                      <img src={picture} alt="" className="h-20 w-20 rounded-md border object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setPicture(null)}
+                        className="absolute -right-2 -top-2 rounded-full border bg-background p-0.5 shadow-sm"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 )}
               </Field>
@@ -442,7 +465,6 @@ export default function Home() {
             </div>
           </CardContent>
           <CardFooter className="flex-col gap-4 justify-center pb-6">
-            <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
             <Button
               size="lg"
               className={cn(
@@ -474,7 +496,7 @@ export default function Home() {
               <div className="space-y-2 flex-1">
                 <LabelWithTooltip 
                   id="replicate_model_edit" 
-                  label="Replicate Model" 
+                  label="Model" 
                   tooltip="Select the specific Replicate model to use for generation." 
                 />
                 <Select 
@@ -551,7 +573,7 @@ export default function Home() {
             </div>
             <Field data-invalid={editPictureInvalid ? "" : undefined}>
               <FieldLabel htmlFor="picture_edit">
-                Picture
+                Image Uploads
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
@@ -609,7 +631,6 @@ export default function Home() {
             </Field>
           </CardContent>
           <CardFooter className="flex-col gap-4 justify-center pb-6">
-            <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
             <Button
               size="lg"
               className={cn(
