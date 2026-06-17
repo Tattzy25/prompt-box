@@ -408,7 +408,7 @@ export default function Home() {
         {/* Card 1: Prompt & Model Settings */}
         <Card className="h-full">
           <CardHeader>
-            <CardTitle>Prompt & Model</CardTitle>
+            <CardTitle className="font-[family-name:var(--font-orbitron)]">Prompt & Model</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
             <div className="space-y-2">
@@ -528,7 +528,7 @@ export default function Home() {
         {/* Card 2: Dimensions & Quality */}
         <Card className="h-full">
           <CardHeader>
-            <CardTitle>Dimensions & Quality</CardTitle>
+            <CardTitle className="font-[family-name:var(--font-orbitron)]">Dimensions & Quality</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
             <div className="grid grid-cols-2 gap-4">
@@ -652,7 +652,7 @@ export default function Home() {
         {/* Card 3: Advanced Generation */}
         <Card className="h-full">
           <CardHeader>
-            <CardTitle>Advanced Generation</CardTitle>
+            <CardTitle className="font-[family-name:var(--font-orbitron)]">Advanced Generation</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
             <div className="space-y-2">
@@ -762,7 +762,7 @@ export default function Home() {
         {/* Card 4: Image Uploads */}
         <Card className="h-full">
           <CardHeader>
-            <CardTitle>Image Uploads</CardTitle>
+            <CardTitle className="font-[family-name:var(--font-orbitron)]">Image Uploads</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
             <ImageUploadInput 
@@ -810,7 +810,7 @@ export default function Home() {
         <Button 
           size="lg" 
           className={cn(
-            "w-full max-w-md font-[family-name:var(--font-rock-salt)] text-2xl md:text-[2rem] py-6 h-auto shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] transition-transform active:scale-95",
+            "w-full max-w-md font-[family-name:var(--font-rock-salt)] text-[24px] md:text-[32px] py-6 h-auto transition-transform active:scale-95",
             isLoading && "opacity-50 cursor-not-allowed active:scale-100"
           )}
           onClick={handleGenerate}

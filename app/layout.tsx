@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Open_Sans, Rock_Salt } from "next/font/google";
+import { Open_Sans, Rock_Salt, Orbitron } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -11,6 +11,11 @@ const openSans = Open_Sans({
 const rockSalt = Rock_Salt({
   weight: "400",
   variable: "--font-rock-salt",
+  subsets: ["latin"],
+});
+
+const orbitron = Orbitron({
+  variable: "--font-orbitron",
   subsets: ["latin"],
 });
 
@@ -50,7 +55,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${openSans.variable} ${rockSalt.variable} antialiased`}
+        className={`${openSans.variable} ${rockSalt.variable} ${orbitron.variable} antialiased`}
       >
         {children}
         <Toaster />
