@@ -9,7 +9,6 @@ const replicate = new Replicate({
 export async function generateImage(formData: FormData) {
   const replicateModelId = formData.get("replicate_model_id") as string
   const prompt = formData.get("prompt") as string
-  const model = formData.get("model") as string
   const aspectRatio = formData.get("aspect_ratio") as string
   const outputFormat = formData.get("output_format") as string
   const numOutputs = parseInt(formData.get("num_outputs") as string)
@@ -22,7 +21,6 @@ export async function generateImage(formData: FormData) {
 
   const input: any = {
     prompt,
-    model,
     aspect_ratio: aspectRatio,
     output_format: outputFormat,
     num_outputs: numOutputs,

@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Field, FieldLabel, FieldDescription } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
@@ -45,7 +46,7 @@ function LabelWithTooltip({ id, label, tooltip }: { id?: string, label: string, 
 }
 
 export default function Home() {
-  const [numOutputs, setNumOutputs] = useState(1)
+  const [numOutputs, setNumOutputs] = useState(4)
   const [aspectRatio, setAspectRatio] = useState("1:1")
   const [width, setWidth] = useState(1024)
   const [height, setHeight] = useState(1024)
@@ -65,7 +66,6 @@ export default function Home() {
   const [replicateModelId, setReplicateModelId] = useState(AVAILABLE_MODELS[0].id)
   const [customModelId, setCustomModelId] = useState("")
   const [prompt, setPrompt] = useState("")
-  const [model, setModel] = useState("dev")
   const [outputFormat, setOutputFormat] = useState("webp")
   const [megapixels, setMegapixels] = useState("1")
   const [outputQuality, setOutputQuality] = useState(80)
@@ -76,8 +76,11 @@ export default function Home() {
   const [editReplicateModelId, setEditReplicateModelId] = useState(AVAILABLE_MODELS[0].id)
   const [editCustomModelId, setEditCustomModelId] = useState("")
   const [editPrompt, setEditPrompt] = useState("")
-  const [editModel, setEditModel] = useState("dev")
-  const [editNumOutputs, setEditNumOutputs] = useState(1)
+  const [editNumOutputs, setEditNumOutputs] = useState(10)
+  const [pictureInvalid, setPictureInvalid] = useState(false)
+  const [editPictureInvalid, setEditPictureInvalid] = useState(false)
+  const [picture, setPicture] = useState<string | null>(null)
+  const [editPictures, setEditPictures] = useState<string[]>([])
 
   const getDimensions = () => {
     if (aspectRatio === "custom") return { w: width, h: height }
@@ -109,7 +112,6 @@ export default function Home() {
     const formData = new FormData()
     formData.append("replicate_model_id", finalModelId)
     formData.append("prompt", prompt)
-    formData.append("model", model)
     formData.append("aspect_ratio", aspectRatio)
     formData.append("output_format", outputFormat)
     formData.append("num_outputs", numOutputs.toString())
@@ -127,7 +129,7 @@ export default function Home() {
       setIsGenerated(true)
     } else {
       console.error(result.error)
-      toast.error(result.error || "Failed to generate image. Please try again.")
+      toast.error(result.error)
     }
     setIsLoading(false)
   }
@@ -145,7 +147,6 @@ export default function Home() {
     const formData = new FormData()
     formData.append("replicate_model_id", finalModelId)
     formData.append("prompt", editPrompt)
-    formData.append("model", editModel)
     formData.append("aspect_ratio", aspectRatio)
     formData.append("output_format", outputFormat)
     formData.append("num_outputs", editNumOutputs.toString())
@@ -161,7 +162,7 @@ export default function Home() {
       setIsGenerated(true)
     } else {
       console.error(result.error)
-      toast.error(result.error || "Failed to edit image. Please try again.")
+      toast.error(result.error)
     }
     setIsLoading(false)
   }
@@ -369,40 +370,55 @@ export default function Home() {
             </div>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="model" 
-                  label="Flux Mode" 
-                  tooltip="Which version of Flux to run inference with. 'Dev' is higher quality (slower), 'Schnell' is faster (lower quality)." 
+              <Field data-invalid={pictureInvalid ? "" : undefined}>
+                <FieldLabel htmlFor="picture">Picture</FieldLabel>
+                <Input
+                  id="picture"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  aria-invalid={pictureInvalid || undefined}
+                  disabled={!!picture}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (!f) return
+                    const ext = f.name.split(".").pop()?.toLowerCase()
+                    if (!["jpg", "jpeg", "png", "webp"].includes(ext ?? "")) {
+                      setPictureInvalid(true)
+                      return
+                    }
+                    setPictureInvalid(false)
+                    const reader = new FileReader()
+                    reader.onloadend = () => setPicture(reader.result as string)
+                    reader.readAsDataURL(f)
+                    e.target.value = ""
+                  }}
                 />
-                <Select 
-                  value={model} 
-                  onValueChange={(val: string) => setModel(val)}
-                >
-                  <SelectTrigger id="model">
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dev">Dev</SelectItem>
-                    <SelectItem value="schnell">Schnell</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="num_outputs" 
-                  label="Num Outputs" 
-                  tooltip="Number of outputs to generate" 
-                />
-                <Input 
-                  id="num_outputs" 
-                  type="number" 
-                  min={1} 
-                  max={4} 
+                <FieldDescription>Select a picture to upload.</FieldDescription>
+                {picture && (
+                  <div className="relative h-20 w-20">
+                    <img src={picture} alt="" className="h-20 w-20 rounded-md border object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setPicture(null)}
+                      className="absolute -right-2 -top-2 rounded-full border bg-background p-0.5 shadow-sm"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="num_outputs">Num Outputs</FieldLabel>
+                <Input
+                  id="num_outputs"
+                  type="number"
+                  min={1}
+                  max={4}
                   value={numOutputs}
-                  onChange={(e) => setNumOutputs(parseInt(e.target.value) || 1)}
+                  onChange={(e) => setNumOutputs(parseInt(e.target.value))}
                 />
-              </div>
+                <FieldDescription>Number of outputs to generate.</FieldDescription>
+              </Field>
             </div>
           </CardContent>
           <CardFooter className="flex-col gap-4 justify-center pb-6">
@@ -434,33 +450,51 @@ export default function Home() {
             <CardTitle className="font-[family-name:var(--font-orbitron)]">Edit Images</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                id="replicate_model_edit" 
-                label="Replicate Model" 
-                tooltip="Select the specific Replicate model to use for generation." 
-              />
-              <Select 
-                value={editReplicateModelId} 
-                onValueChange={(val: string) => {
-                  setEditReplicateModelId(val)
-                  if (val === "custom" && !editCustomModelId) {
-                    setEditCustomModelId("black-forest-labs/flux-dev")
-                  }
-                }}
-              >
-                <SelectTrigger id="replicate_model_edit">
-                  <SelectValue placeholder="Select model" />
-                </SelectTrigger>
-                <SelectContent>
-                  {AVAILABLE_MODELS.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>
-                      {m.name}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="custom">Other (Custom ID)</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-end gap-4">
+              <div className="space-y-2 flex-1">
+                <LabelWithTooltip 
+                  id="replicate_model_edit" 
+                  label="Replicate Model" 
+                  tooltip="Select the specific Replicate model to use for generation." 
+                />
+                <Select 
+                  value={editReplicateModelId} 
+                  onValueChange={(val: string) => {
+                    setEditReplicateModelId(val)
+                    if (val === "custom" && !editCustomModelId) {
+                      setEditCustomModelId("black-forest-labs/flux-dev")
+                    }
+                  }}
+                >
+                  <SelectTrigger id="replicate_model_edit">
+                    <SelectValue placeholder="Select model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AVAILABLE_MODELS.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Other (Custom ID)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2 w-32">
+                <LabelWithTooltip 
+                  id="num_outputs_edit" 
+                  label="Num Outputs" 
+                  tooltip="Number of outputs to generate" 
+                />
+                <Input 
+                  id="num_outputs_edit" 
+                  type="number" 
+                  min={1} 
+                  max={10} 
+                  value={editNumOutputs}
+                  onChange={(e) => setEditNumOutputs(parseInt(e.target.value))}
+                />
+              </div>
             </div>
 
             {editReplicateModelId === "custom" && (
@@ -486,9 +520,6 @@ export default function Home() {
                   label="Prompt" 
                   tooltip="Prompt for generated image. If you include the `trigger_word` used in the training process you are more likely to activate the trained object, style, or concept in the resulting image." 
                 />
-                <span className="text-sm text-muted-foreground">
-                  Trigger word: <span className="font-mono font-bold text-primary">FAMOSOFLUXO</span>
-                </span>
               </div>
               <Textarea 
                 id="prompt_edit" 
@@ -498,43 +529,54 @@ export default function Home() {
                 onChange={(e) => setEditPrompt(e.target.value)}
               />
             </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="model_edit" 
-                  label="Flux Mode" 
-                  tooltip="Which version of Flux to run inference with. 'Dev' is higher quality (slower), 'Schnell' is faster (lower quality)." 
-                />
-                <Select 
-                  value={editModel} 
-                  onValueChange={(val: string) => setEditModel(val)}
-                >
-                  <SelectTrigger id="model_edit">
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dev">Dev</SelectItem>
-                    <SelectItem value="schnell">Schnell</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="num_outputs_edit" 
-                  label="Num Outputs" 
-                  tooltip="Number of outputs to generate" 
-                />
-                <Input 
-                  id="num_outputs_edit" 
-                  type="number" 
-                  min={1} 
-                  max={4} 
-                  value={editNumOutputs}
-                  onChange={(e) => setEditNumOutputs(parseInt(e.target.value) || 1)}
-                />
-              </div>
-            </div>
+            <Field data-invalid={editPictureInvalid ? "" : undefined}>
+              <FieldLabel htmlFor="picture_edit">Picture</FieldLabel>
+              <Input
+                id="picture_edit"
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp"
+                aria-invalid={editPictureInvalid || undefined}
+                disabled={editPictures.length >= 4}
+                onChange={async (e) => {
+                  const input = e.target
+                  const files = Array.from(input.files ?? [])
+                  const valid = files.filter((f) =>
+                    ["jpg", "jpeg", "png", "webp"].includes(f.name.split(".").pop()?.toLowerCase() ?? "")
+                  )
+                  setEditPictureInvalid(valid.length !== files.length)
+                  const urls = await Promise.all(
+                    valid.map(
+                      (f) =>
+                        new Promise<string>((resolve) => {
+                          const reader = new FileReader()
+                          reader.onloadend = () => resolve(reader.result as string)
+                          reader.readAsDataURL(f)
+                        })
+                    )
+                  )
+                  setEditPictures((prev) => [...prev, ...urls].slice(0, 4))
+                  input.value = ""
+                }}
+              />
+              <FieldDescription>Select up to 4 pictures to upload.</FieldDescription>
+              {editPictures.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {editPictures.map((src, i) => (
+                    <div key={i} className="relative h-20 w-20">
+                      <img src={src} alt="" className="h-20 w-20 rounded-md border object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setEditPictures((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="absolute -right-2 -top-2 rounded-full border bg-background p-0.5 shadow-sm"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Field>
           </CardContent>
           <CardFooter className="flex-col gap-4 justify-center pb-6">
             <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
