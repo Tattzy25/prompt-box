@@ -72,6 +72,13 @@ export default function Home() {
   const [disableSafetyChecker] = useState(true)
   const [promptStrength, setPromptStrength] = useState(0.8)
 
+  // Edit (Card 2) State
+  const [editReplicateModelId, setEditReplicateModelId] = useState(AVAILABLE_MODELS[0].id)
+  const [editCustomModelId, setEditCustomModelId] = useState("")
+  const [editPrompt, setEditPrompt] = useState("")
+  const [editModel, setEditModel] = useState("dev")
+  const [editNumOutputs, setEditNumOutputs] = useState(1)
+
   const getDimensions = () => {
     if (aspectRatio === "custom") return { w: width, h: height }
     const [w, h] = aspectRatio.split(":").map(Number)
@@ -121,6 +128,40 @@ export default function Home() {
     } else {
       console.error(result.error)
       toast.error(result.error || "Failed to generate image. Please try again.")
+    }
+    setIsLoading(false)
+  }
+
+  const handleEdit = async () => {
+    if (isLoading) return
+    if (!editPrompt.trim()) {
+      toast.error("Please enter a prompt to edit an image")
+      return
+    }
+    setIsLoading(true)
+    setIsGenerated(false)
+    setGeneratedImages([])
+    const finalModelId = editReplicateModelId === "custom" ? editCustomModelId : editReplicateModelId
+    const formData = new FormData()
+    formData.append("replicate_model_id", finalModelId)
+    formData.append("prompt", editPrompt)
+    formData.append("model", editModel)
+    formData.append("aspect_ratio", aspectRatio)
+    formData.append("output_format", outputFormat)
+    formData.append("num_outputs", editNumOutputs.toString())
+    formData.append("width", width.toString())
+    formData.append("height", height.toString())
+    formData.append("megapixels", megapixels)
+    formData.append("output_quality", outputQuality.toString())
+    if (disableSafetyChecker) formData.append("disable_safety_checker", "on")
+    formData.append("prompt_strength", promptStrength.toString())
+    const result = await generateImage(formData)
+    if (result.success) {
+      setGeneratedImages(Array.isArray(result.output) ? result.output : [result.output])
+      setIsGenerated(true)
+    } else {
+      console.error(result.error)
+      toast.error(result.error || "Failed to edit image. Please try again.")
     }
     setIsLoading(false)
   }
@@ -364,8 +405,26 @@ export default function Home() {
               </div>
             </div>
           </CardContent>
-          <CardFooter className="justify-center pb-6">
+          <CardFooter className="flex-col gap-4 justify-center pb-6">
             <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
+            <Button
+              size="lg"
+              className={cn(
+                "w-full max-w-md font-[family-name:var(--font-rock-salt)] leading-none text-[24px] md:text-[32px] transition-transform active:scale-95",
+                isLoading && "opacity-50 cursor-not-allowed active:scale-100"
+              )}
+              onClick={handleGenerate}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                  GENERATING...
+                </>
+              ) : (
+                "GENERATE NOW"
+              )}
+            </Button>
           </CardFooter>
         </Card>
 
@@ -377,20 +436,20 @@ export default function Home() {
           <CardContent className="space-y-4 flex-1">
             <div className="space-y-2">
               <LabelWithTooltip 
-                id="replicate_model" 
+                id="replicate_model_edit" 
                 label="Replicate Model" 
                 tooltip="Select the specific Replicate model to use for generation." 
               />
               <Select 
-                value={replicateModelId} 
+                value={editReplicateModelId} 
                 onValueChange={(val: string) => {
-                  setReplicateModelId(val)
-                  if (val === "custom" && !customModelId) {
-                    setCustomModelId("black-forest-labs/flux-dev")
+                  setEditReplicateModelId(val)
+                  if (val === "custom" && !editCustomModelId) {
+                    setEditCustomModelId("black-forest-labs/flux-dev")
                   }
                 }}
               >
-                <SelectTrigger id="replicate_model">
+                <SelectTrigger id="replicate_model_edit">
                   <SelectValue placeholder="Select model" />
                 </SelectTrigger>
                 <SelectContent>
@@ -404,18 +463,18 @@ export default function Home() {
               </Select>
             </div>
 
-            {replicateModelId === "custom" && (
+            {editReplicateModelId === "custom" && (
               <div className="space-y-2">
                 <LabelWithTooltip 
-                  id="custom_model_id" 
+                  id="custom_model_id_edit" 
                   label="Custom Model ID" 
                   tooltip="Enter the full Replicate model ID (e.g., owner/model:version)" 
                 />
                 <Input 
-                  id="custom_model_id" 
+                  id="custom_model_id_edit" 
                   placeholder="owner/model:version" 
-                  value={customModelId}
-                  onChange={(e) => setCustomModelId(e.target.value)}
+                  value={editCustomModelId}
+                  onChange={(e) => setEditCustomModelId(e.target.value)}
                 />
               </div>
             )}
@@ -423,7 +482,7 @@ export default function Home() {
             <div className="space-y-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <LabelWithTooltip 
-                  id="prompt" 
+                  id="prompt_edit" 
                   label="Prompt" 
                   tooltip="Prompt for generated image. If you include the `trigger_word` used in the training process you are more likely to activate the trained object, style, or concept in the resulting image." 
                 />
@@ -432,26 +491,26 @@ export default function Home() {
                 </span>
               </div>
               <Textarea 
-                id="prompt" 
+                id="prompt_edit" 
                 placeholder="Enter your prompt here..." 
                 className="h-24" 
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                value={editPrompt}
+                onChange={(e) => setEditPrompt(e.target.value)}
               />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <LabelWithTooltip 
-                  id="model" 
+                  id="model_edit" 
                   label="Flux Mode" 
                   tooltip="Which version of Flux to run inference with. 'Dev' is higher quality (slower), 'Schnell' is faster (lower quality)." 
                 />
                 <Select 
-                  value={model} 
-                  onValueChange={(val: string) => setModel(val)}
+                  value={editModel} 
+                  onValueChange={(val: string) => setEditModel(val)}
                 >
-                  <SelectTrigger id="model">
+                  <SelectTrigger id="model_edit">
                     <SelectValue placeholder="Select model" />
                   </SelectTrigger>
                   <SelectContent>
@@ -462,47 +521,45 @@ export default function Home() {
               </div>
               <div className="space-y-2">
                 <LabelWithTooltip 
-                  id="num_outputs" 
+                  id="num_outputs_edit" 
                   label="Num Outputs" 
                   tooltip="Number of outputs to generate" 
                 />
                 <Input 
-                  id="num_outputs" 
+                  id="num_outputs_edit" 
                   type="number" 
                   min={1} 
                   max={4} 
-                  value={numOutputs}
-                  onChange={(e) => setNumOutputs(parseInt(e.target.value) || 1)}
+                  value={editNumOutputs}
+                  onChange={(e) => setEditNumOutputs(parseInt(e.target.value) || 1)}
                 />
               </div>
             </div>
           </CardContent>
-          <CardFooter className="justify-center pb-6">
+          <CardFooter className="flex-col gap-4 justify-center pb-6">
             <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
+            <Button
+              size="lg"
+              className={cn(
+                "w-full max-w-md font-[family-name:var(--font-rock-salt)] leading-none text-[24px] md:text-[32px] transition-transform active:scale-95",
+                isLoading && "opacity-50 cursor-not-allowed active:scale-100"
+              )}
+              onClick={handleEdit}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                  EDITING...
+                </>
+              ) : (
+                "EDIT NOW"
+              )}
+            </Button>
           </CardFooter>
         </Card>
       </div>
 
-      <div className="flex justify-center">
-        <Button 
-          size="lg" 
-          className={cn(
-            "w-full max-w-md font-[family-name:var(--font-rock-salt)] leading-none text-[24px] md:text-[32px] transition-transform active:scale-95",
-            isLoading && "opacity-50 cursor-not-allowed active:scale-100"
-          )}
-          onClick={handleGenerate}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-              GENERATING...
-            </>
-          ) : (
-            "GENERATE NOW"
-          )}
-        </Button>
-      </div>
 
       <Separator />
       
