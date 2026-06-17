@@ -201,7 +201,7 @@ export default function Home() {
   const [numInferenceSteps, setNumInferenceSteps] = useState(28)
   const [seed, setSeed] = useState<number | undefined>(undefined)
   const [goFast, setGoFast] = useState(false)
-  const [disableSafetyChecker, setDisableSafetyChecker] = useState(false)
+  const [disableSafetyChecker] = useState(false)
   const [image, setImage] = useState("")
   const [imageFileName, setImageFileName] = useState("")
   const [mask, setMask] = useState("")
@@ -714,19 +714,6 @@ export default function Home() {
                 id="go_fast" 
                 checked={goFast}
                 onCheckedChange={setGoFast}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <LabelWithTooltip 
-                id="disable_safety" 
-                label="Disable Safety Checker" 
-                tooltip="Disable safety checker for generated images." 
-              />
-              <Switch 
-                id="disable_safety" 
-                checked={disableSafetyChecker}
-                onCheckedChange={setDisableSafetyChecker}
               />
             </div>
 
