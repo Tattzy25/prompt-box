@@ -810,7 +810,7 @@ export default function Home() {
         <Button 
           size="lg" 
           className={cn(
-            "w-full max-w-md font-[family-name:var(--font-rock-salt)] text-[24px] md:text-[32px] py-6 h-auto transition-transform active:scale-95",
+            "w-full max-w-md font-[family-name:var(--font-rock-salt)] leading-none text-[24px] md:text-[32px] transition-transform active:scale-95",
             isLoading && "opacity-50 cursor-not-allowed active:scale-100"
           )}
           onClick={handleGenerate}
