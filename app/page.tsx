@@ -402,13 +402,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="w-full flex justify-center items-center py-4">
-        <img 
-          src="/header svg gokani.svg" 
-          alt="GoKAnI Header" 
-          className="h-24 w-auto object-contain"
-        />
-      </div>
       <div className="container mx-auto py-10 px-[10px] space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Card 1: Prompt & Model Settings */}
