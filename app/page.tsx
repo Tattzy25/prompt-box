@@ -201,7 +201,7 @@ export default function Home() {
   const [numInferenceSteps, setNumInferenceSteps] = useState(28)
   const [seed, setSeed] = useState<number | undefined>(undefined)
   const [goFast, setGoFast] = useState(false)
-  const [disableSafetyChecker] = useState(false)
+  const [disableSafetyChecker] = useState(true)
   const [image, setImage] = useState("")
   const [imageFileName, setImageFileName] = useState("")
   const [mask, setMask] = useState("")
@@ -717,11 +717,9 @@ export default function Home() {
               />
             </div>
 
-            <Separator className="my-2" />
-            
             <div className="space-y-2">
-              <LabelWithTooltip 
-                id="extra_lora" 
+              <LabelWithTooltip
+                id="extra_lora"
                 label="Extra LoRA" 
                 tooltip="Load LoRA weights. Supports Replicate models in the format <owner>/<username> or <owner>/<username>/<version>, HuggingFace URLs in the format huggingface.co/<owner>/<model-name>, CivitAI URLs in the format civitai.com/models/<id>[/<model-name>], or arbitrary .safetensors URLs from the Internet. For example, 'fofr/flux-pixar-cars'" 
               />
