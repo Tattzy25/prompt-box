@@ -22,8 +22,6 @@ export async function generateImage(formData: FormData) {
   const seed = formData.get("seed") ? parseInt(formData.get("seed") as string) : undefined
   const goFast = formData.get("go_fast") === "on"
   const disableSafetyChecker = formData.get("disable_safety_checker") === "on"
-  const image = formData.get("image") as string
-  const mask = formData.get("mask") as string
   const promptStrength = parseFloat(formData.get("prompt_strength") as string)
   const extraLora = formData.get("extra_lora") as string
   const loraScale = parseFloat(formData.get("lora_scale") as string)
@@ -52,8 +50,6 @@ export async function generateImage(formData: FormData) {
   }
 
   if (seed) input.seed = seed
-  if (image) input.image = image
-  if (mask) input.mask = mask
   if (extraLora) input.extra_lora = extraLora
 
   try {

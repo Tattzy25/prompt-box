@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Info, ImageIcon, Loader2, Download, Upload, Link as LinkIcon, X } from "lucide-react"
+import { Info, ImageIcon, Loader2, Download, Link as LinkIcon, X } from "lucide-react"
 import { HugeiconsShareIcon } from "@/components/ui/hugeicons-share"
 import Lightbox from "yet-another-react-lightbox"
 import "yet-another-react-lightbox/styles.css"
@@ -41,134 +41,6 @@ function LabelWithTooltip({ id, label, tooltip }: { id?: string, label: string, 
           <p>{tooltip}</p>
         </PopoverContent>
       </Popover>
-    </div>
-  )
-}
-
-function ImageUploadInput({ 
-  id, 
-  value, 
-  onChange, 
-  label,
-  tooltip
-}: { 
-  id: string, 
-  value: string, 
-  onChange: (val: string, fileName?: string) => void, 
-  label: string,
-  tooltip: string
-}) {
-  const [isDragging, setIsDragging] = useState(false)
-  const [localFileName, setLocalFileName] = useState("")
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const handleFile = (file: File) => {
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      onChange(reader.result as string, file.name)
-      setLocalFileName(file.name)
-    }
-    reader.onerror = () => {
-      toast.error("Failed to read file. Please try again.")
-    }
-    reader.readAsDataURL(file)
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file) {
-      if (file.type.startsWith('image/')) {
-        handleFile(file)
-      } else {
-        toast.error("Please upload a valid image file (JPG, PNG, GIF)")
-      }
-    }
-  }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      handleFile(file)
-    }
-  }
-  
-  const handleClear = () => {
-    onChange("", "")
-    setLocalFileName("")
-    if (fileInputRef.current) fileInputRef.current.value = ""
-  }
-
-  return (
-    <div className="space-y-2">
-      <LabelWithTooltip id={id} label={label} tooltip={tooltip} />
-      
-      {value ? (
-        <div className="relative rounded-lg border bg-background p-2">
-          <div className="relative aspect-video w-full overflow-hidden rounded-md border bg-muted/50">
-            <img 
-              src={value} 
-              alt="Preview" 
-              className="h-full w-full object-contain" 
-            />
-          </div>
-          <div className="mt-2 flex items-center justify-between px-1">
-            <span className="text-xs text-muted-foreground truncate max-w-[200px]">
-              {localFileName || "Image URL"}
-            </span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-6 px-2 text-xs text-destructive hover:text-destructive"
-              onClick={handleClear}
-            >
-              Clear file
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <div
-          className={cn(
-            "relative flex min-h-[150px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 px-6 py-4 text-center transition-colors hover:bg-muted/50",
-            isDragging && "border-primary bg-muted"
-          )}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <div className="flex flex-col items-center gap-2">
-            <div className="rounded-full bg-background p-3 shadow-sm">
-              <Upload className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <div className="text-sm font-medium text-muted-foreground">
-              <span className="font-semibold text-foreground">Click to upload</span> or drag and drop
-            </div>
-            <div className="text-xs text-muted-foreground">
-              SVG, PNG, JPG or GIF
-            </div>
-          </div>
-        </div>
-      )}
-      
-      <input
-        type="file"
-        ref={fileInputRef}
-        className="hidden"
-        accept="image/*"
-        onChange={handleFileChange}
-      />
     </div>
   )
 }
@@ -203,10 +75,6 @@ export default function Home() {
   const [seed, setSeed] = useState<number | undefined>(undefined)
   const [goFast, setGoFast] = useState(false)
   const [disableSafetyChecker] = useState(true)
-  const [image, setImage] = useState("")
-  const [imageFileName, setImageFileName] = useState("")
-  const [mask, setMask] = useState("")
-  const [maskFileName, setMaskFileName] = useState("")
   const [promptStrength, setPromptStrength] = useState(0.8)
   const [extraLora, setExtraLora] = useState("")
   const [loraScale, setLoraScale] = useState(1)
@@ -255,8 +123,6 @@ export default function Home() {
     if (seed) formData.append("seed", seed.toString())
     if (goFast) formData.append("go_fast", "on")
     if (disableSafetyChecker) formData.append("disable_safety_checker", "on")
-    if (image) formData.append("image", image)
-    if (mask) formData.append("mask", mask)
     formData.append("prompt_strength", promptStrength.toString())
     if (extraLora) formData.append("extra_lora", extraLora)
     formData.append("lora_scale", loraScale.toString())
@@ -752,52 +618,6 @@ export default function Home() {
                   step={0.1} 
                 />
               </div>
-            </div>
-          </CardContent>
-          <CardFooter className="justify-center pb-6">
-            <p className="text-xs font-bold text-center text-muted-foreground">DO NOT TOUCH SETTINGS UNLESS YOU KNOW WHAT YOU ARE DOING</p>
-          </CardFooter>
-        </Card>
-
-        {/* Card 4: Image Uploads */}
-        <Card className="h-full">
-          <CardHeader>
-            <CardTitle className="font-[family-name:var(--font-orbitron)]">Image Uploads</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 flex-1">
-            <ImageUploadInput 
-              id="image_url"  
-              label="Image (Img2Img)" 
-              tooltip="Input image for image to image or inpainting mode. If provided, aspect_ratio, width, and height inputs are ignored." 
-              value={image}
-              onChange={(val, name) => {
-                setImage(val)
-                if (name) setImageFileName(name)
-              }}
-            />
-
-            <ImageUploadInput 
-              id="mask_url" 
-              label="Mask (Inpainting)" 
-              tooltip="Image mask for image inpainting mode. If provided, aspect_ratio, width, and height inputs are ignored." 
-              value={mask}
-              onChange={(val, name) => {
-                setMask(val)
-                if (name) setMaskFileName(name)
-              }}
-            />
-
-            <div className="space-y-2">
-              <LabelWithTooltip 
-                label={`Prompt Strength (${promptStrength})`}
-                tooltip="Prompt strength when using img2img. 1.0 corresponds to full destruction of information in image" 
-              />
-              <Slider 
-                value={[promptStrength]} 
-                onValueChange={(vals: number[]) => setPromptStrength(vals[0])} 
-                max={1} 
-                step={0.05} 
-              />
             </div>
           </CardContent>
           <CardFooter className="justify-center pb-6">
