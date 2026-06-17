@@ -412,7 +412,7 @@ export default function Home() {
       <div className="container mx-auto py-10 px-[10px] space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Card 1: Prompt & Model Settings */}
-        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
+        <Card className="h-full">
           <CardHeader>
             <CardTitle>Prompt & Model</CardTitle>
           </CardHeader>
@@ -532,7 +532,7 @@ export default function Home() {
         </Card>
 
         {/* Card 2: Dimensions & Quality */}
-        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
+        <Card className="h-full">
           <CardHeader>
             <CardTitle>Dimensions & Quality</CardTitle>
           </CardHeader>
@@ -656,7 +656,7 @@ export default function Home() {
         </Card>
 
         {/* Card 3: Advanced Generation */}
-        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
+        <Card className="h-full">
           <CardHeader>
             <CardTitle>Advanced Generation</CardTitle>
           </CardHeader>
@@ -766,7 +766,7 @@ export default function Home() {
         </Card>
 
         {/* Card 4: Image Uploads */}
-        <Card className="shadow-[0px_0px_7px_3px_rgba(28,156,240,0.8)] h-full">
+        <Card className="h-full">
           <CardHeader>
             <CardTitle>Image Uploads</CardTitle>
           </CardHeader>
