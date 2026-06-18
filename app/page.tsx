@@ -18,7 +18,7 @@ import Lightbox from "yet-another-react-lightbox"
 import "yet-another-react-lightbox/styles.css"
 import { toast } from "sonner"
 import { generateImage } from "./actions"
-import { AVAILABLE_MODELS } from "@/lib/models"
+import { AVAILABLE_MODELS, GENERATE_CREDITS_PER_OUTPUT } from "@/lib/models"
 import { useIframeAutoResize } from "@/hooks/use-iframe-autoresize"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import {
@@ -336,7 +336,7 @@ export default function Home() {
                   tooltip='A trigger word is a "secret password" required to activate the Model specific training and generate the exact image style.'
                 />
                 <div className="flex items-center gap-2">
-                  <p className="font-[family-name:var(--font-orbitron)] text-sm">trigger word {triggerWord}</p>
+                  <p className="font-[family-name:var(--font-orbitron)] text-sm">trigger word : {triggerWord}</p>
                   <button
                     type="button"
                     aria-label="Add trigger word to prompt"
@@ -364,6 +364,15 @@ export default function Home() {
                   value={numOutputs}
                   onChange={(e) => setNumOutputs(parseInt(e.target.value))}
                 />
+              </div>
+              <div className="space-y-2 w-32">
+                <LabelWithTooltip
+                  label="Total Credits"
+                  tooltip="Total credits for this request: cost per image × number of outputs."
+                />
+                <div className="flex h-9 w-full items-center justify-center rounded-md border bg-transparent text-sm font-medium shadow-xs">
+                  {(numOutputs || 0) * GENERATE_CREDITS_PER_OUTPUT}
+                </div>
               </div>
             </div>
 
@@ -498,6 +507,15 @@ export default function Home() {
                   value={editNumOutputs}
                   onChange={(e) => setEditNumOutputs(parseInt(e.target.value))}
                 />
+              </div>
+              <div className="space-y-2 w-32">
+                <LabelWithTooltip
+                  label="Total Credits"
+                  tooltip="Total credits for this request: cost per image × number of outputs."
+                />
+                <div className="flex h-9 w-full items-center justify-center rounded-md border bg-transparent text-sm font-medium shadow-xs">
+                  {(editNumOutputs || 0) * editModel.creditsPerOutput}
+                </div>
               </div>
             </div>
 
