@@ -326,9 +326,12 @@ export default function Home() {
             <CardTitle className="font-[family-name:var(--font-orbitron)]">Generate Images</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
-            <div className="flex items-end gap-4">
+            <div className="flex items-start gap-4">
               <div className="space-y-2 flex-1">
-                <Label>Trigger</Label>
+                <LabelWithTooltip
+                  label="Trigger"
+                  tooltip='A trigger word is a "secret password" required to activate the Model specific training and generate the exact image style.'
+                />
                 <p className="font-[family-name:var(--font-orbitron)] text-sm">trigger word {triggerWord}</p>
               </div>
               <div className="space-y-2 w-32">
