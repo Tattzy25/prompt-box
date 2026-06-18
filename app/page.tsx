@@ -64,7 +64,6 @@ export default function Home() {
 
   // Form State
   const [replicateModelId, setReplicateModelId] = useState(AVAILABLE_MODELS[0].id)
-  const [customModelId, setCustomModelId] = useState("")
   const [prompt, setPrompt] = useState("")
   const [triggerWord, setTriggerWord] = useState("")
   const [customerId, setCustomerId] = useState("")
@@ -78,7 +77,6 @@ export default function Home() {
 
   // Edit (Card 2) State
   const [editReplicateModelId, setEditReplicateModelId] = useState(AVAILABLE_MODELS[0].id)
-  const [editCustomModelId, setEditCustomModelId] = useState("")
   const [editPrompt, setEditPrompt] = useState("")
   const [editNumOutputs, setEditNumOutputs] = useState(10)
   const [pictureInvalid, setPictureInvalid] = useState(false)
@@ -108,6 +106,9 @@ export default function Home() {
     setSourceId(sid ? Number(sid) : null)
   }, [])
 
+  const editModel =
+    AVAILABLE_MODELS.find((m) => m.id === editReplicateModelId) ?? AVAILABLE_MODELS[0]
+
   const handleGenerate = async () => {
     if (isLoading) return // Prevent double clicks
     
@@ -120,7 +121,7 @@ export default function Home() {
     setIsGenerated(false)
     setGeneratedImages([])
 
-    const finalModelId = replicateModelId === "custom" ? customModelId : replicateModelId
+    const finalModelId = replicateModelId
 
     const formData = new FormData()
     formData.append("replicate_model_id", finalModelId)
@@ -160,7 +161,7 @@ export default function Home() {
     setIsLoading(true)
     setIsGenerated(false)
     setGeneratedImages([])
-    const finalModelId = editReplicateModelId === "custom" ? editCustomModelId : editReplicateModelId
+    const finalModelId = editReplicateModelId
     const formData = new FormData()
     formData.append("replicate_model_id", finalModelId)
     formData.append("prompt", editPrompt)
@@ -449,12 +450,7 @@ export default function Home() {
                 />
                 <Select 
                   value={editReplicateModelId} 
-                  onValueChange={(val: string) => {
-                    setEditReplicateModelId(val)
-                    if (val === "custom" && !editCustomModelId) {
-                      setEditCustomModelId("black-forest-labs/flux-dev")
-                    }
-                  }}
+                  onValueChange={(val: string) => setEditReplicateModelId(val)}
                 >
                   <SelectTrigger id="replicate_model_edit">
                     <SelectValue placeholder="Select model" />
@@ -465,7 +461,6 @@ export default function Home() {
                         {m.name}
                       </SelectItem>
                     ))}
-                    <SelectItem value="custom">Other (Custom ID)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -480,28 +475,12 @@ export default function Home() {
                   id="num_outputs_edit" 
                   type="number" 
                   min={1} 
-                  max={10} 
+                  max={editModel.maxOutputs} 
                   value={editNumOutputs}
                   onChange={(e) => setEditNumOutputs(parseInt(e.target.value))}
                 />
               </div>
             </div>
-
-            {editReplicateModelId === "custom" && (
-              <div className="space-y-2">
-                <LabelWithTooltip 
-                  id="custom_model_id_edit" 
-                  label="Custom Model ID" 
-                  tooltip="Enter the full Replicate model ID (e.g., owner/model:version)" 
-                />
-                <Input 
-                  id="custom_model_id_edit" 
-                  placeholder="owner/model:version" 
-                  value={editCustomModelId}
-                  onChange={(e) => setEditCustomModelId(e.target.value)}
-                />
-              </div>
-            )}
 
             <div className="space-y-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -537,7 +516,7 @@ export default function Home() {
                 multiple
                 accept="image/jpeg,image/png,image/webp"
                 aria-invalid={editPictureInvalid || undefined}
-                disabled={editPictures.length >= 4}
+                disabled={editPictures.length >= editModel.maxUploads}
                 onChange={async (e) => {
                   const input = e.target
                   const files = Array.from(input.files ?? [])
@@ -555,11 +534,11 @@ export default function Home() {
                         })
                     )
                   )
-                  setEditPictures((prev) => [...prev, ...urls].slice(0, 4))
+                  setEditPictures((prev) => [...prev, ...urls].slice(0, editModel.maxUploads))
                   input.value = ""
                 }}
               />
-              <FieldDescription>Select up to 4 pictures to upload.</FieldDescription>
+              <FieldDescription>Select up to {editModel.maxUploads} pictures to upload.</FieldDescription>
               {editPictures.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {editPictures.map((src, i) => (
