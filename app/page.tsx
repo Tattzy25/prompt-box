@@ -72,6 +72,7 @@ export default function Home() {
   const [height, setHeight] = useState(1024)
   const [isGenerated, setIsGenerated] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [generatedImages, setGeneratedImages] = useState<string[]>([])
@@ -134,8 +135,8 @@ export default function Home() {
   const handleGenerate = async () => {
     if (isLoading) return // Prevent double clicks
     
-    if (!prompt.trim()) {
-      toast.error("Please enter a prompt to generate an image")
+    if (prompt.trim().length < 10) {
+      toast.error("Prompt must be at least 10 characters")
       return
     }
 
@@ -175,12 +176,12 @@ export default function Home() {
   }
 
   const handleEdit = async () => {
-    if (isLoading) return
-    if (!editPrompt.trim()) {
-      toast.error("Please enter a prompt to edit an image")
+    if (isEditing) return
+    if (editPrompt.trim().length < 10) {
+      toast.error("Prompt must be at least 10 characters")
       return
     }
-    setIsLoading(true)
+    setIsEditing(true)
     setIsGenerated(false)
     setGeneratedImages([])
     const finalModelId = editReplicateModelId
@@ -208,7 +209,7 @@ export default function Home() {
       console.error(result.error)
       toast.error(result.error)
     }
-    setIsLoading(false)
+    setIsEditing(false)
   }
 
   const handleDownload = async (url: string, index: number) => {
@@ -609,12 +610,12 @@ export default function Home() {
               size="lg"
               className={cn(
                 "w-full max-w-md font-[family-name:var(--font-rock-salt)] leading-none text-[24px] md:text-[32px] transition-transform active:scale-95",
-                isLoading && "opacity-50 cursor-not-allowed active:scale-100"
+                isEditing && "opacity-50 cursor-not-allowed active:scale-100"
               )}
               onClick={handleEdit}
-              disabled={isLoading}
+              disabled={isEditing}
             >
-              {isLoading ? (
+              {isEditing ? (
                 <>
                   <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                   EDITING...
@@ -631,7 +632,7 @@ export default function Home() {
       <Separator className="bg-transparent" />
       
       <div className="flex flex-col items-center pb-12">
-        {isLoading ? (
+        {isLoading || isEditing ? (
           <div className="flex flex-col items-center justify-center space-y-4 py-12">
             <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
             <p className="text-muted-foreground">Creating your masterpiece...</p>
