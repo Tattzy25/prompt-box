@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Info, ImageIcon, Loader2, Download, Link as LinkIcon, X, Copy } from "lucide-react"
 import { HugeiconsShareIcon } from "@/components/ui/hugeicons-share"
 import Lightbox from "yet-another-react-lightbox"
@@ -30,18 +30,37 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
+function InfoHint({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Info
+          className="h-4 w-4 text-muted-foreground cursor-pointer"
+          onMouseEnter={() => setOpen(true)}
+          onMouseLeave={() => setOpen(false)}
+          onClick={(e) => {
+            e.preventDefault()
+            setOpen((o) => !o)
+          }}
+        />
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-auto max-w-xs text-sm"
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+      >
+        {children}
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 function LabelWithTooltip({ id, label, tooltip }: { id?: string, label: string, tooltip: string }) {
   return (
     <div className="flex items-center gap-2">
       <Label htmlFor={id}>{label}</Label>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs text-sm">
-          <p>{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
+      <InfoHint>{tooltip}</InfoHint>
     </div>
   )
 }
@@ -321,15 +340,15 @@ export default function Home() {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="container mx-auto py-10 px-[10px] space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="w-full py-10 px-[5px] space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[5px]">
         {/* Card 1: Generate Images */}
         <Card className="h-full">
           <CardHeader>
             <CardTitle className="font-[family-name:var(--font-orbitron)]">Generate Images</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
-            <div className="flex items-start gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
               <div className="space-y-2 flex-1">
                 <LabelWithTooltip
                   label="Trigger"
@@ -350,28 +369,30 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-              <div className="space-y-2 w-32">
-                <LabelWithTooltip
-                  id="num_outputs"
-                  label="Num Outputs"
-                  tooltip="Number of outputs to generate"
-                />
-                <Input
-                  id="num_outputs"
-                  type="number"
-                  min={1}
-                  max={4}
-                  value={numOutputs}
-                  onChange={(e) => setNumOutputs(parseInt(e.target.value))}
-                />
-              </div>
-              <div className="space-y-2 w-32">
-                <LabelWithTooltip
-                  label="Total Credits"
-                  tooltip="Total credits for this request: cost per image × number of outputs."
-                />
-                <div className="flex h-9 w-full items-center justify-center rounded-md border bg-transparent text-sm font-medium shadow-xs">
-                  {(numOutputs || 0) * GENERATE_CREDITS_PER_OUTPUT}
+              <div className="flex items-start gap-4">
+                <div className="space-y-2 w-32">
+                  <LabelWithTooltip
+                    id="num_outputs"
+                    label="Num Outputs"
+                    tooltip="Number of outputs to generate"
+                  />
+                  <Input
+                    id="num_outputs"
+                    type="number"
+                    min={1}
+                    max={4}
+                    value={numOutputs}
+                    onChange={(e) => setNumOutputs(parseInt(e.target.value))}
+                  />
+                </div>
+                <div className="space-y-2 w-32">
+                  <LabelWithTooltip
+                    label="Total Credits"
+                    tooltip="Total credits for this request: cost per image × number of outputs."
+                  />
+                  <div className="flex h-9 w-full items-center justify-center rounded-md border bg-transparent text-sm font-medium shadow-xs">
+                    {(numOutputs || 0) * GENERATE_CREDITS_PER_OUTPUT}
+                  </div>
                 </div>
               </div>
             </div>
@@ -392,20 +413,14 @@ export default function Home() {
             </div>
 
             <Field data-invalid={pictureInvalid ? "" : undefined}>
-              <FieldLabel htmlFor="picture">
-                Reference Image (Optional)
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs text-sm">
-                    <p>Upload 1 reference image max for better quality.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </FieldLabel>
+              <div className="flex items-center gap-2">
+                <FieldLabel htmlFor="picture">Reference Image (Optional)</FieldLabel>
+                <InfoHint>Upload 1 reference image max for better quality.</InfoHint>
+              </div>
               <Input
                 id="picture"
                 type="file"
+                className="mt-2"
                 accept="image/jpeg,image/png,image/webp"
                 aria-invalid={pictureInvalid || undefined}
                 disabled={!!picture}
@@ -469,7 +484,7 @@ export default function Home() {
             <CardTitle className="font-[family-name:var(--font-orbitron)]">Edit Images</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
-            <div className="flex items-end gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
               <div className="space-y-2 flex-1">
                 <LabelWithTooltip 
                   id="replicate_model_edit" 
@@ -493,28 +508,30 @@ export default function Home() {
                 </Select>
               </div>
 
-              <div className="space-y-2 w-32">
-                <LabelWithTooltip 
-                  id="num_outputs_edit" 
-                  label="Num Outputs" 
-                  tooltip="Number of outputs to generate" 
-                />
-                <Input 
-                  id="num_outputs_edit" 
-                  type="number" 
-                  min={1} 
-                  max={editModel.maxOutputs} 
-                  value={editNumOutputs}
-                  onChange={(e) => setEditNumOutputs(parseInt(e.target.value))}
-                />
-              </div>
-              <div className="space-y-2 w-32">
-                <LabelWithTooltip
-                  label="Total Credits"
-                  tooltip="Total credits for this request: cost per image × number of outputs."
-                />
-                <div className="flex h-9 w-full items-center justify-center rounded-md border bg-transparent text-sm font-medium shadow-xs">
-                  {(editNumOutputs || 0) * editModel.creditsPerOutput}
+              <div className="flex items-end gap-4">
+                <div className="space-y-2 w-32">
+                  <LabelWithTooltip 
+                    id="num_outputs_edit" 
+                    label="Num Outputs" 
+                    tooltip="Number of outputs to generate" 
+                  />
+                  <Input 
+                    id="num_outputs_edit" 
+                    type="number" 
+                    min={1} 
+                    max={editModel.maxOutputs} 
+                    value={editNumOutputs}
+                    onChange={(e) => setEditNumOutputs(parseInt(e.target.value))}
+                  />
+                </div>
+                <div className="space-y-2 w-32">
+                  <LabelWithTooltip
+                    label="Total Credits"
+                    tooltip="Total credits for this request: cost per image × number of outputs."
+                  />
+                  <div className="flex h-9 w-full items-center justify-center rounded-md border bg-transparent text-sm font-medium shadow-xs">
+                    {(editNumOutputs || 0) * editModel.creditsPerOutput}
+                  </div>
                 </div>
               </div>
             </div>
@@ -536,17 +553,10 @@ export default function Home() {
               />
             </div>
             <Field data-invalid={editPictureInvalid ? "" : undefined}>
-              <FieldLabel htmlFor="picture_edit">
-                Image Uploads
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs text-sm">
-                    <p>Up to 4 images for better quality. Some models may allow fewer, some more.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </FieldLabel>
+              <div className="flex items-center gap-2">
+                <FieldLabel htmlFor="picture_edit">Image Uploads</FieldLabel>
+                <InfoHint>Up to 4 images for better quality. Some models may allow fewer, some more.</InfoHint>
+              </div>
               <Input
                 id="picture_edit"
                 type="file"
@@ -618,7 +628,7 @@ export default function Home() {
       </div>
 
 
-      <Separator />
+      <Separator className="bg-transparent" />
       
       <div className="flex flex-col items-center pb-12">
         {isLoading ? (

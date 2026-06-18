@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Open_Sans, Rock_Salt, Orbitron } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 const openSans = Open_Sans({
@@ -65,7 +64,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <TooltipProvider>{children}</TooltipProvider>
+          {children}
           <Toaster />
         </ThemeProvider>
       </body>
