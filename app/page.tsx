@@ -18,6 +18,7 @@ import Lightbox from "yet-another-react-lightbox"
 import "yet-another-react-lightbox/styles.css"
 import { toast } from "sonner"
 import { generateImage } from "./actions"
+import { generateImages } from "@/lib/generate"
 import { AVAILABLE_MODELS, GENERATE_CREDITS_PER_OUTPUT } from "@/lib/models"
 import { useIframeAutoResize } from "@/hooks/use-iframe-autoresize"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
@@ -100,9 +101,9 @@ export default function Home() {
   const [editReplicateModelId, setEditReplicateModelId] = useState(AVAILABLE_MODELS[0].id)
   const [editPrompt, setEditPrompt] = useState("")
   const [editNumOutputs, setEditNumOutputs] = useState(10)
-  const [pictureInvalid, setPictureInvalid] = useState(false)
+  const [referenceImageInvalid, setReferenceImageInvalid] = useState(false)
   const [editPictureInvalid, setEditPictureInvalid] = useState(false)
-  const [picture, setPicture] = useState<string | null>(null)
+  const [referenceImage, setReferenceImage] = useState<string | null>(null)
   const [editPictures, setEditPictures] = useState<string[]>([])
 
   const getDimensions = () => {
@@ -132,6 +133,8 @@ export default function Home() {
   const editModel =
     AVAILABLE_MODELS.find((m) => m.id === editReplicateModelId) ?? AVAILABLE_MODELS[0]
 
+  const totalCredits = (numOutputs || 0) * GENERATE_CREDITS_PER_OUTPUT
+  const editTotalCredits = editNumOutputs * editModel.creditsPerOutput
   const handleGenerate = async () => {
     if (isLoading) return // Prevent double clicks
     
@@ -144,34 +147,17 @@ export default function Home() {
     setIsGenerated(false)
     setGeneratedImages([])
 
-    const finalModelId = replicateModelId
-
-    const formData = new FormData()
-    formData.append("replicate_model_id", finalModelId)
-    formData.append("prompt", prompt)
-    formData.append("aspect_ratio", aspectRatio)
-    formData.append("output_format", outputFormat)
-    formData.append("num_outputs", numOutputs.toString())
-    formData.append("width", width.toString())
-    formData.append("height", height.toString())
-    formData.append("megapixels", megapixels)
-    formData.append("output_quality", outputQuality.toString())
-    if (disableSafetyChecker) formData.append("disable_safety_checker", "on")
-    formData.append("prompt_strength", promptStrength.toString())
-
-    formData.append("customer_id", customerId)
-    formData.append("version", version)
-    formData.append("source_id", sourceId?.toString() ?? "")
-
-    const result = await generateImage(formData)
-
-    if (result.success) {
-      setGeneratedImages(Array.isArray(result.output) ? result.output : [result.output])
-      setIsGenerated(true)
-    } else {
-      console.error(result.error)
-      toast.error(result.error)
-    }
+    const data = await generateImages({
+      prompt,
+      version,
+      sourceId,
+      numOutputs,
+      referenceImage,
+      customerId,
+      totalCredits,
+    })
+    setGeneratedImages(data.urls)
+    setIsGenerated(true)
     setIsLoading(false)
   }
 
@@ -200,6 +186,7 @@ export default function Home() {
     formData.append("customer_id", customerId)
     formData.append("version", version)
     formData.append("source_id", sourceId?.toString() ?? "")
+    editPictures.forEach((url, i) => formData.append(`edit_upload${i + 1}`, url))
 
     const result = await generateImage(formData)
     if (result.success) {
@@ -392,7 +379,7 @@ export default function Home() {
                     tooltip="Total credits for this request: cost per image × number of outputs."
                   />
                   <div className="flex h-9 w-full items-center justify-center rounded-md border bg-transparent text-sm font-medium shadow-xs">
-                    {(numOutputs || 0) * GENERATE_CREDITS_PER_OUTPUT}
+                    {totalCredits}
                   </div>
                 </div>
               </div>
@@ -413,41 +400,46 @@ export default function Home() {
               />
             </div>
 
-            <Field data-invalid={pictureInvalid ? "" : undefined}>
+            <Field data-invalid={referenceImageInvalid ? "" : undefined}>
               <div className="flex items-center gap-2">
-                <FieldLabel htmlFor="picture">Reference Image (Optional)</FieldLabel>
+                <FieldLabel htmlFor="referenceImage">Reference Image (Optional)</FieldLabel>
                 <InfoHint>Upload 1 reference image max for better quality.</InfoHint>
               </div>
               <Input
-                id="picture"
+                id="referenceImage"
                 type="file"
                 className="mt-2"
                 accept="image/jpeg,image/png,image/webp"
-                aria-invalid={pictureInvalid || undefined}
-                disabled={!!picture}
-                onChange={(e) => {
-                  const f = e.target.files?.[0]
+                aria-invalid={referenceImageInvalid || undefined}
+                disabled={!!referenceImage}
+                onChange={async (e) => {
+                  const input = e.target
+                  const f = input.files?.[0]
                   if (!f) return
                   const ext = f.name.split(".").pop()?.toLowerCase()
                   if (!["jpg", "jpeg", "png", "webp"].includes(ext ?? "")) {
-                    setPictureInvalid(true)
+                    setReferenceImageInvalid(true)
                     return
                   }
-                  setPictureInvalid(false)
-                  const reader = new FileReader()
-                  reader.onloadend = () => setPicture(reader.result as string)
-                  reader.readAsDataURL(f)
-                  e.target.value = ""
+                  setReferenceImageInvalid(false)
+                  const res = await fetch("https://model.avi-kay2019.workers.dev", {
+                    method: "POST",
+                    headers: { "X-File-Type": "image", "Content-Type": "image/png" },
+                    body: f,
+                  })
+                  const data = await res.json()
+                  setReferenceImage(data.url)
+                  input.value = ""
                 }}
               />
               <FieldDescription>Select a picture to upload.</FieldDescription>
-              {picture && (
+              {referenceImage && (
                 <div className="flex flex-wrap gap-2">
                   <div className="relative h-20 w-20">
-                    <img src={picture} alt="" className="h-20 w-20 rounded-md border object-cover" />
+                    <img src={referenceImage} alt="" className="h-20 w-20 rounded-md border object-cover" />
                     <button
                       type="button"
-                      onClick={() => setPicture(null)}
+                      onClick={() => setReferenceImage(null)}
                       className="absolute -right-2 -top-2 rounded-full border bg-background p-0.5 shadow-sm"
                     >
                       <X className="h-4 w-4" />
@@ -573,14 +565,15 @@ export default function Home() {
                   )
                   setEditPictureInvalid(valid.length !== files.length)
                   const urls = await Promise.all(
-                    valid.map(
-                      (f) =>
-                        new Promise<string>((resolve) => {
-                          const reader = new FileReader()
-                          reader.onloadend = () => resolve(reader.result as string)
-                          reader.readAsDataURL(f)
-                        })
-                    )
+                    valid.map(async (f) => {
+                      const res = await fetch("https://model.avi-kay2019.workers.dev", {
+                        method: "POST",
+                        headers: { "X-File-Type": "image", "Content-Type": "image/png" },
+                        body: f,
+                      })
+                      const data = await res.json()
+                      return data.url as string
+                    })
                   )
                   setEditPictures((prev) => [...prev, ...urls].slice(0, editModel.maxUploads))
                   input.value = ""
