@@ -12,13 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
-import { Info, ImageIcon, Loader2, Download, Link as LinkIcon, X } from "lucide-react"
+import { Info, ImageIcon, Loader2, Download, Link as LinkIcon, X, Copy } from "lucide-react"
 import { HugeiconsShareIcon } from "@/components/ui/hugeicons-share"
 import Lightbox from "yet-another-react-lightbox"
 import "yet-another-react-lightbox/styles.css"
 import { toast } from "sonner"
 import { generateImage } from "./actions"
 import { AVAILABLE_MODELS } from "@/lib/models"
+import { useIframeAutoResize } from "@/hooks/use-iframe-autoresize"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import {
   Dialog,
@@ -105,6 +106,8 @@ export default function Home() {
     const sid = q.get("source_id")
     setSourceId(sid ? Number(sid) : null)
   }, [])
+
+  useIframeAutoResize()
 
   const editModel =
     AVAILABLE_MODELS.find((m) => m.id === editReplicateModelId) ?? AVAILABLE_MODELS[0]
@@ -332,7 +335,20 @@ export default function Home() {
                   label="Trigger"
                   tooltip='A trigger word is a "secret password" required to activate the Model specific training and generate the exact image style.'
                 />
-                <p className="font-[family-name:var(--font-orbitron)] text-sm">trigger word {triggerWord}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-[family-name:var(--font-orbitron)] text-sm">trigger word {triggerWord}</p>
+                  <button
+                    type="button"
+                    aria-label="Add trigger word to prompt"
+                    onClick={() => {
+                      setPrompt((prev) => (prev ? `${prev} ${triggerWord}` : triggerWord))
+                      toast.success("Trigger word added to prompt")
+                    }}
+                    className="text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
               <div className="space-y-2 w-32">
                 <LabelWithTooltip
