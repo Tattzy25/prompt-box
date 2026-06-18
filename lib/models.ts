@@ -13,8 +13,8 @@ export const GENERATE_CREDITS_PER_OUTPUT = 1
 
 export const AVAILABLE_MODELS: AvailableModel[] = [
   {
-    id: "openai/gpt-image-2",
-    name: "openai/gpt-image-2",
+    id: "See Dream - 5",
+    name: "See Dream - 5",
     description:
       "OpenAI's state-of-the-art image generation model. Create and edit images from text with strong instruction following, sharp text rendering, and detailed editing.",
     maxOutputs: 10,
@@ -29,4 +29,4 @@ export const AVAILABLE_MODELS: AvailableModel[] = [
     maxUploads: 1,
     creditsPerOutput: 1,
   },
-]
+];
