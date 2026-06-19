@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Open_Sans, Rock_Salt, Orbitron } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/components/ui/theme-provider";
 import "./globals.css";
 
 const openSans = Open_Sans({
@@ -22,7 +21,8 @@ const orbitron = Orbitron({
 
 export const metadata: Metadata = {
   title: "tattty - Image Generator",
-  description: "Generate amazing images with tattty (Flux). A powerful AI image generation tool powered by tattty.",
+  description:
+    "Generate amazing images with tattty (Flux). A powerful AI image generation tool powered by tattty.",
   keywords: ["AI", "Image Generator", "Flux", "editor", "tattty", "Art"],
   authors: [{ name: "tattty Team" }],
   openGraph: {
@@ -54,19 +54,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body
-        className={`${openSans.variable} ${rockSalt.variable} ${orbitron.variable} antialiased`}
+        className={`${openSans.variable} ${rockSalt.variable} ${orbitron.variable} antialiased bg-white text-black`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        {children}
+        <Toaster />
       </body>
     </html>
   );

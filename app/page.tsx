@@ -138,7 +138,6 @@ export default function Home() {
     const data = await generateImages({
       prompt,
       version,
-      sourceId,
       numOutputs,
       referenceImage,
       customerId,
@@ -483,9 +482,7 @@ export default function Home() {
                   />
                   <Select
                     value={editModelId}
-                    onValueChange={(val: string) =>
-                      setEditModelId(val)
-                    }
+                    onValueChange={(val: string) => setEditModelId(val)}
                   >
                     <SelectTrigger id="model_edit">
                       <SelectValue placeholder="Select model" />
@@ -645,7 +642,7 @@ export default function Home() {
           </Card>
         </div>
 
-        <Separator className="bg-transparent" />
+        <Separator className="bg-black" />
 
         <div className="flex flex-col items-center pb-12">
           {isLoading || isEditing ? (
