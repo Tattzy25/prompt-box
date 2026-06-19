@@ -138,6 +138,7 @@ export default function Home() {
   const handleGenerate = async () => {
     if (isLoading) return // Prevent double clicks
 
+
     setIsLoading(true)
     setIsGenerated(false)
     setGeneratedImages([])
@@ -313,380 +314,444 @@ export default function Home() {
     <div className="flex flex-col w-full">
       <div className="w-full py-10 px-[5px] space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Card 1: Generate Images */}
-        <Card className="h-full">
-          <CardHeader>
-            <CardTitle className="font-[family-name:var(--font-orbitron)]">Generate Images</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 flex-1">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-              <div className="space-y-2 flex-1">
-                <LabelWithTooltip
-                  label="Trigger"
-                  tooltip='A trigger word is a "secret password" required to activate the Model specific training and generate the exact image style.'
-                />
-                <div className="flex items-center gap-2">
-                  <p className="font-[family-name:var(--font-orbitron)] text-sm">trigger word : {triggerWord}</p>
-                  <button
-                    type="button"
-                    aria-label="Add trigger word to prompt"
-                    onClick={() => {
-                      setPrompt((prev) => (prev ? `${prev} ${triggerWord}` : triggerWord))
-                      toast.success("Trigger word added to prompt")
-                    }}
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="space-y-2 w-32">
+          {/* Card 1: Generate Images */}
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle className="font-[family-name:var(--font-orbitron)]">
+                Generate Images
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 flex-1">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                <div className="space-y-2 flex-1">
                   <LabelWithTooltip
-                    id="num_outputs"
-                    label="Num Outputs"
-                    tooltip="Number of outputs to generate"
+                    label="Trigger"
+                    tooltip='A trigger word is a "secret password" required to activate the Model specific training and generate the exact image style.'
                   />
-                  <Input
-                    id="num_outputs"
-                    type="number"
-                    min={1}
-                    max={4}
-                    value={numOutputs}
-                    onChange={(e) => setNumOutputs(parseInt(e.target.value))}
-                  />
-                </div>
-                <div className="space-y-2 w-32">
-                  <LabelWithTooltip
-                    label="Total Credits"
-                    tooltip="Total credits for this request: cost per image × number of outputs."
-                  />
-                  <div className="flex h-9 w-full items-center justify-center rounded-md border bg-transparent text-sm font-medium shadow-xs">
-                    {totalCredits}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <LabelWithTooltip
-                id="prompt"
-                label="Prompt"
-                tooltip="Prompt for generated image. If you include the `trigger_word` used in the training process you are more likely to activate the trained object, style, or concept in the resulting image."
-              />
-              <Textarea
-                id="prompt"
-                placeholder="Enter your prompt here..."
-                className="h-24"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-              />
-            </div>
-
-            <Field data-invalid={referenceImageInvalid ? "" : undefined}>
-              <div className="flex items-center gap-2">
-                <FieldLabel htmlFor="referenceImage">Reference Image (Optional)</FieldLabel>
-                <InfoHint>Upload 1 reference image max for better quality.</InfoHint>
-              </div>
-              <Input
-                id="referenceImage"
-                type="file"
-                className="mt-2"
-                accept="image/jpeg,image/png,image/webp"
-                aria-invalid={referenceImageInvalid || undefined}
-                disabled={!!referenceImage}
-                onChange={async (e) => {
-                  const input = e.target
-                  const f = input.files?.[0]
-                  if (!f) return
-                  const ext = f.name.split(".").pop()?.toLowerCase()
-                  if (!["jpg", "jpeg", "png", "webp"].includes(ext ?? "")) {
-                    setReferenceImageInvalid(true)
-                    return
-                  }
-                  setReferenceImageInvalid(false)
-                  const res = await fetch("https://model.avi-kay2019.workers.dev", {
-                    method: "POST",
-                    headers: { "X-File-Type": "image", "Content-Type": "image/png" },
-                    body: f,
-                  })
-                  const data = await res.json()
-                  setReferenceImage(data.url)
-                  input.value = ""
-                }}
-              />
-              <FieldDescription>Select a picture to upload.</FieldDescription>
-              {referenceImage && (
-                <div className="flex flex-wrap gap-2">
-                  <div className="relative h-20 w-20">
-                    <img src={referenceImage} alt="" className="h-20 w-20 rounded-md border object-cover" />
+                  <div className="flex items-center gap-2">
+                    <p className="font-[family-name:var(--font-orbitron)] text-sm">
+                      trigger word : {triggerWord}
+                    </p>
                     <button
                       type="button"
-                      onClick={() => setReferenceImage(null)}
-                      className="absolute -right-2 -top-2 rounded-full border bg-background p-0.5 shadow-sm"
+                      aria-label="Add trigger word to prompt"
+                      onClick={() => {
+                        setPrompt((prev) =>
+                          prev ? `${prev} ${triggerWord}` : triggerWord,
+                        );
+                        toast.success("Trigger word added to prompt");
+                      }}
+                      className="text-muted-foreground transition-colors hover:text-foreground"
                     >
-                      <X className="h-4 w-4" />
+                      <Copy className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
-              )}
-            </Field>
-          </CardContent>
-          <CardFooter className="flex-col gap-4 justify-center pb-6">
-            <Button
-              size="lg"
-              className={cn(
-                "w-full max-w-md font-[family-name:var(--font-rock-salt)] leading-none text-[24px] md:text-[32px] transition-transform active:scale-95",
-                isLoading && "opacity-50 cursor-not-allowed active:scale-100"
-              )}
-              onClick={handleGenerate}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-                  GENERATING...
-                </>
-              ) : (
-                "GENERATE NOW"
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
-
-        {/* Card 2: Edit Images */}
-        <Card className="h-full">
-          <CardHeader>
-            <CardTitle className="font-[family-name:var(--font-orbitron)]">Edit Images</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 flex-1">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-              <div className="space-y-2 flex-1">
-                <LabelWithTooltip 
-                  id="replicate_model_edit" 
-                  label="Model" 
-                  tooltip="Select the specific Replicate model to use for generation." 
-                />
-                <Select 
-                  value={editReplicateModelId} 
-                  onValueChange={(val: string) => setEditReplicateModelId(val)}
-                >
-                  <SelectTrigger id="replicate_model_edit">
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AVAILABLE_MODELS.map((m) => (
-                      <SelectItem key={m.id} value={m.id}>
-                        {m.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-end gap-4">
-                <div className="space-y-2 w-32">
-                  <LabelWithTooltip 
-                    id="num_outputs_edit" 
-                    label="Num Outputs" 
-                    tooltip="Number of outputs to generate" 
-                  />
-                  <Input 
-                    id="num_outputs_edit" 
-                    type="number" 
-                    min={1} 
-                    max={editModel.maxOutputs} 
-                    value={editNumOutputs}
-                    onChange={(e) => setEditNumOutputs(parseInt(e.target.value))}
-                  />
-                </div>
-                <div className="space-y-2 w-32">
-                  <LabelWithTooltip
-                    label="Total Credits"
-                    tooltip="Total credits for this request: cost per image × number of outputs."
-                  />
-                  <div className="flex h-9 w-full items-center justify-center rounded-md border bg-transparent text-sm font-medium shadow-xs">
-                    {(editNumOutputs || 0) * editModel.creditsPerOutput}
+                <div className="flex items-start gap-4">
+                  <div className="space-y-2 w-32">
+                    <LabelWithTooltip
+                      id="num_outputs"
+                      label="Num Outputs"
+                      tooltip="Number of outputs to generate"
+                    />
+                    <Input
+                      id="num_outputs"
+                      type="number"
+                      min={1}
+                      max={4}
+                      value={numOutputs}
+                      onChange={(e) => setNumOutputs(parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2 w-32">
+                    <LabelWithTooltip
+                      label="Total Credits"
+                      tooltip="Total credits for this request: cost per image × number of outputs."
+                    />
+                    <div className="flex h-9 w-full items-center justify-center rounded-md border bg-transparent text-sm font-medium shadow-xs">
+                      {totalCredits}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <LabelWithTooltip 
-                  id="prompt_edit" 
-                  label="Prompt" 
-                  tooltip="Prompt for generated image. If you include the `trigger_word` used in the training process you are more likely to activate the trained object, style, or concept in the resulting image." 
+              <div className="space-y-2">
+                <LabelWithTooltip
+                  id="prompt"
+                  label="Prompt"
+                  tooltip="Prompt for generated image. If you include the `trigger_word` used in the training process you are more likely to activate the trained object, style, or concept in the resulting image."
+                />
+                <Textarea
+                  id="prompt"
+                  placeholder="Enter your prompt here..."
+                  className="h-24"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
                 />
               </div>
-              <Textarea 
-                id="prompt_edit" 
-                placeholder="Enter your prompt here..." 
-                className="h-24" 
-                value={editPrompt}
-                onChange={(e) => setEditPrompt(e.target.value)}
-              />
-            </div>
-            <Field data-invalid={editPictureInvalid ? "" : undefined}>
-              <div className="flex items-center gap-2">
-                <FieldLabel htmlFor="picture_edit">Image Uploads</FieldLabel>
-                <InfoHint>Up to 4 images for better quality. Some models may allow fewer, some more.</InfoHint>
-              </div>
-              <Input
-                id="picture_edit"
-                type="file"
-                multiple
-                accept="image/jpeg,image/png,image/webp"
-                aria-invalid={editPictureInvalid || undefined}
-                disabled={editPictures.length >= editModel.maxUploads}
-                onChange={async (e) => {
-                  const input = e.target
-                  const files = Array.from(input.files ?? [])
-                  const valid = files.filter((f) =>
-                    ["jpg", "jpeg", "png", "webp"].includes(f.name.split(".").pop()?.toLowerCase() ?? "")
-                  )
-                  setEditPictureInvalid(valid.length !== files.length)
-                  const urls = await Promise.all(
-                    valid.map(async (f) => {
-                      const res = await fetch("https://model.avi-kay2019.workers.dev", {
+
+              <Field data-invalid={referenceImageInvalid ? "" : undefined}>
+                <div className="flex items-center gap-2">
+                  <FieldLabel htmlFor="referenceImage">
+                    Reference Image (Optional)
+                  </FieldLabel>
+                  <InfoHint>
+                    Upload 1 reference image max for better quality.
+                  </InfoHint>
+                </div>
+                <Input
+                  id="referenceImage"
+                  type="file"
+                  className="mt-2"
+                  accept="image/jpeg,image/png,image/webp"
+                  aria-invalid={referenceImageInvalid || undefined}
+                  disabled={!!referenceImage}
+                  onChange={async (e) => {
+                    const input = e.target;
+                    const f = input.files?.[0];
+                    if (!f) return;
+                    const ext = f.name.split(".").pop()?.toLowerCase();
+                    if (!["jpg", "jpeg", "png", "webp"].includes(ext ?? "")) {
+                      setReferenceImageInvalid(true);
+                      return;
+                    }
+                    setReferenceImageInvalid(false);
+                    const res = await fetch(
+                      "https://model.avi-kay2019.workers.dev",
+                      {
                         method: "POST",
-                        headers: { "X-File-Type": "image", "Content-Type": "image/png" },
+                        headers: {
+                          "X-File-Type": "image",
+                          "Content-Type": "image/png",
+                        },
                         body: f,
-                      })
-                      const data = await res.json()
-                      return data.url as string
-                    })
-                  )
-                  setEditPictures((prev) => [...prev, ...urls].slice(0, editModel.maxUploads))
-                  input.value = ""
-                }}
-              />
-              <FieldDescription>Select up to {editModel.maxUploads} pictures to upload.</FieldDescription>
-              {editPictures.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {editPictures.map((src, i) => (
-                    <div key={i} className="relative h-20 w-20">
-                      <img src={src} alt="" className="h-20 w-20 rounded-md border object-cover" />
+                      },
+                    );
+                    const data = await res.json();
+                    setReferenceImage(data.url);
+                    input.value = "";
+                  }}
+                />
+                <FieldDescription>Select a picture to upload.</FieldDescription>
+                {referenceImage && (
+                  <div className="flex flex-wrap gap-2">
+                    <div className="relative h-20 w-20">
+                      <img
+                        src={referenceImage}
+                        alt=""
+                        className="h-20 w-20 rounded-md border object-cover"
+                      />
                       <button
                         type="button"
-                        onClick={() => setEditPictures((prev) => prev.filter((_, idx) => idx !== i))}
+                        onClick={() => setReferenceImage(null)}
                         className="absolute -right-2 -top-2 rounded-full border bg-background p-0.5 shadow-sm"
                       >
                         <X className="h-4 w-4" />
                       </button>
                     </div>
-                  ))}
-                </div>
-              )}
-            </Field>
-          </CardContent>
-          <CardFooter className="flex-col gap-4 justify-center pb-6">
-            <Button
-              size="lg"
-              className={cn(
-                "w-full max-w-md font-[family-name:var(--font-rock-salt)] leading-none text-[24px] md:text-[32px] transition-transform active:scale-95",
-                isEditing && "opacity-50 cursor-not-allowed active:scale-100"
-              )}
-              onClick={handleEdit}
-              disabled={isEditing}
-            >
-              {isEditing ? (
-                <>
-                  <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-                  EDITING...
-                </>
-              ) : (
-                "EDIT NOW"
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-
-
-      <Separator className="bg-transparent" />
-      
-      <div className="flex flex-col items-center pb-12">
-        {isLoading || isEditing ? (
-          <div className="flex flex-col items-center justify-center space-y-4 py-12">
-            <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
-            <p className="text-muted-foreground">Creating your masterpiece...</p>
-          </div>
-        ) : (
-          <>
-            {generatedImages.length > 1 && (
-              <Button onClick={handleDownloadAll} variant="secondary" className="mb-8">
-                <Download className="mr-2 h-4 w-4" />
-                Download All ({generatedImages.length})
+                  </div>
+                )}
+              </Field>
+            </CardContent>
+            <CardFooter className="flex-col gap-4 justify-center pb-6">
+              <Button
+                size="lg"
+                className={cn(
+                  "w-full max-w-md font-[family-name:var(--font-rock-salt)] leading-none text-[24px] md:text-[32px] transition-transform active:scale-95",
+                  isLoading && "opacity-50 cursor-not-allowed active:scale-100",
+                )}
+                onClick={handleGenerate}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                    GENERATING...
+                  </>
+                ) : (
+                  "GENERATE NOW"
+                )}
               </Button>
-            )}
-            <div className="flex flex-wrap justify-center items-center gap-8">
-              {generatedImages.map((src, i) => (
-                <div key={i} className="flex flex-col gap-2">
-                  <div 
-                    className="relative rounded-lg flex items-center justify-center w-full max-w-md shadow-sm cursor-pointer transition-colors"
-                    style={getAspectRatioStyle(aspectRatio)}
-                    onClick={() => {
-                      setLightboxIndex(i)
-                      setLightboxOpen(true)
-                    }}
+            </CardFooter>
+          </Card>
+
+          {/* Card 2: Edit Images */}
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle className="font-[family-name:var(--font-orbitron)]">
+                Edit Images
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 flex-1">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                <div className="space-y-2 flex-1">
+                  <LabelWithTooltip
+                    id="replicate_model_edit"
+                    label="Model"
+                    tooltip="Select the specific Replicate model to use for generation."
+                  />
+                  <Select
+                    value={editReplicateModelId}
+                    onValueChange={(val: string) =>
+                      setEditReplicateModelId(val)
+                    }
                   >
-                    <img 
-                      src={src} 
-                      alt={`Generated image ${i + 1}`} 
-                      className="w-full h-full object-cover rounded-lg"
+                    <SelectTrigger id="replicate_model_edit">
+                      <SelectValue placeholder="Select model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {AVAILABLE_MODELS.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>
+                          {m.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-end gap-4">
+                  <div className="space-y-2 w-32">
+                    <LabelWithTooltip
+                      id="num_outputs_edit"
+                      label="Num Outputs"
+                      tooltip="Number of outputs to generate"
+                    />
+                    <Input
+                      id="num_outputs_edit"
+                      type="number"
+                      min={1}
+                      max={editModel.maxOutputs}
+                      value={editNumOutputs}
+                      onChange={(e) =>
+                        setEditNumOutputs(parseInt(e.target.value))
+                      }
                     />
                   </div>
-                  <div className="flex gap-2 w-full max-w-md">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => handleDownload(src, i)}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Download
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => handleShare(src, i)}
-                    >
-                      <HugeiconsShareIcon className="mr-2" />
-                      Share
-                    </Button>
+                  <div className="space-y-2 w-32">
+                    <LabelWithTooltip
+                      label="Total Credits"
+                      tooltip="Total credits for this request: cost per image × number of outputs."
+                    />
+                    <div className="flex h-9 w-full items-center justify-center rounded-md border bg-transparent text-sm font-medium shadow-xs">
+                      {(editNumOutputs || 0) * editModel.creditsPerOutput}
+                    </div>
                   </div>
                 </div>
-              ))}
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <LabelWithTooltip
+                    id="prompt_edit"
+                    label="Prompt"
+                    tooltip="Prompt for generated image. If you include the `trigger_word` used in the training process you are more likely to activate the trained object, style, or concept in the resulting image."
+                  />
+                </div>
+                <Textarea
+                  id="prompt_edit"
+                  placeholder="Enter your prompt here..."
+                  className="h-24"
+                  value={editPrompt}
+                  onChange={(e) => setEditPrompt(e.target.value)}
+                />
+              </div>
+              <Field data-invalid={editPictureInvalid ? "" : undefined}>
+                <div className="flex items-center gap-2">
+                  <FieldLabel htmlFor="picture_edit">Image Uploads</FieldLabel>
+                  <InfoHint>
+                    Up to 4 images for better quality. Some models may allow
+                    fewer, some more.
+                  </InfoHint>
+                </div>
+                <Input
+                  id="picture_edit"
+                  type="file"
+                  multiple
+                  accept="image/jpeg,image/png,image/webp"
+                  aria-invalid={editPictureInvalid || undefined}
+                  disabled={editPictures.length >= editModel.maxUploads}
+                  onChange={async (e) => {
+                    const input = e.target;
+                    const files = Array.from(input.files ?? []);
+                    const valid = files.filter((f) =>
+                      ["jpg", "jpeg", "png", "webp"].includes(
+                        f.name.split(".").pop()?.toLowerCase() ?? "",
+                      ),
+                    );
+                    setEditPictureInvalid(valid.length !== files.length);
+                    const urls = await Promise.all(
+                      valid.map(async (f) => {
+                        const res = await fetch(
+                          "https://model.avi-kay2019.workers.dev",
+                          {
+                            method: "POST",
+                            headers: {
+                              "X-File-Type": "image",
+                              "Content-Type": "image/png",
+                            },
+                            body: f,
+                          },
+                        );
+                        const data = await res.json();
+                        return data.url as string;
+                      }),
+                    );
+                    setEditPictures((prev) =>
+                      [...prev, ...urls].slice(0, editModel.maxUploads),
+                    );
+                    input.value = "";
+                  }}
+                />
+                <FieldDescription>
+                  Select up to {editModel.maxUploads} pictures to upload.
+                </FieldDescription>
+                {editPictures.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {editPictures.map((src, i) => (
+                      <div key={i} className="relative h-20 w-20">
+                        <img
+                          src={src}
+                          alt=""
+                          className="h-20 w-20 rounded-md border object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEditPictures((prev) =>
+                              prev.filter((_, idx) => idx !== i),
+                            )
+                          }
+                          className="absolute -right-2 -top-2 rounded-full border bg-background p-0.5 shadow-sm"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Field>
+            </CardContent>
+            <CardFooter className="flex-col gap-4 justify-center pb-6">
+              <Button
+                size="lg"
+                className={cn(
+                  "w-full max-w-md font-[family-name:var(--font-rock-salt)] leading-none text-[24px] md:text-[32px] transition-transform active:scale-95",
+                  isEditing && "opacity-50 cursor-not-allowed active:scale-100",
+                )}
+                onClick={handleEdit}
+                disabled={isEditing}
+              >
+                {isEditing ? (
+                  <>
+                    <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                    EDITING...
+                  </>
+                ) : (
+                  "EDIT NOW"
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+
+        <Separator className="bg-transparent" />
+
+        <div className="flex flex-col items-center pb-12">
+          {isLoading || isEditing ? (
+            <div className="flex flex-col items-center justify-center space-y-4 py-12">
+              <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
+              <p className="text-muted-foreground">
+                Creating your masterpiece...
+              </p>
             </div>
-          </>
-        )}
-      </div>
+          ) : (
+            <>
+              {generatedImages.length > 1 && (
+                <Button
+                  onClick={handleDownloadAll}
+                  variant="secondary"
+                  className="mb-8"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download All ({generatedImages.length})
+                </Button>
+              )}
+              <div className="flex flex-wrap justify-center items-center gap-8">
+                {generatedImages.map((src, i) => (
+                  <div
+                    key={i}
+                    className="relative rounded-lg border bg-muted/30 p-2"
+                  >
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => {
+                        setLightboxIndex(i);
+                        setLightboxOpen(true);
+                      }}
+                    >
+                      <img
+                        src={src}
+                        alt={`Generated image ${i + 1}`}
+                        className="block w-full h-auto object-contain rounded-lg"
+                      />
+                    </div>
 
-      <Lightbox
-        open={lightboxOpen}
-        close={() => setLightboxOpen(false)}
-        index={lightboxIndex}
-        slides={slides}
-      />
+                    <div className="flex gap-2 w-full max-w-md mt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleDownload(src, i)}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Download
+                      </Button>
 
-      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Ready to Share</DialogTitle>
-            <DialogDescription>
-              Your image has been prepared. Click the button below to share it.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShareDialogOpen(false)}>Cancel</Button>
-            <Button onClick={executeShare}>Share Now</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleShare(src, i)}
+                      >
+                        <Share2 className="mr-2 h-4 w-4" />
+                        Share
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        <Lightbox
+          open={lightboxOpen}
+          close={() => setLightboxOpen(false)}
+          index={lightboxIndex}
+          slides={slides}
+        />
+
+        <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Ready to Share</DialogTitle>
+              <DialogDescription>
+                Your image has been prepared. Click the button below to share
+                it.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                onClick={() => setShareDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={executeShare}>Share Now</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
-  )
+  );
 }
