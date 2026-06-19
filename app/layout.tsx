@@ -21,20 +21,20 @@ const orbitron = Orbitron({
 });
 
 export const metadata: Metadata = {
-  title: "GoKAnI AI - Image Generator",
-  description: "Generate amazing images with GoKAnI AI (Flux). A powerful AI image generation tool powered by Replicate.",
-  keywords: ["AI", "Image Generator", "Flux", "Replicate", "GoKAnI", "Art"],
-  authors: [{ name: "GoKAnI Team" }],
+  title: "tattty - Image Generator",
+  description: "Generate amazing images with tattty (Flux). A powerful AI image generation tool powered by tattty.",
+  keywords: ["AI", "Image Generator", "Flux", "editor", "tattty", "Art"],
+  authors: [{ name: "tattty Team" }],
   openGraph: {
-    title: "GoKAnI AI - Image Generator",
-    description: "Generate amazing images with GoKAnI AI (Flux)",
-    siteName: "GoKAnI AI",
+    title: "tattty - Image Generator",
+    description: "Generate amazing images with tattty AI (Flux)",
+    siteName: "tattty AI",
     images: [
       {
         url: "/gokanix1200x630.png",
         width: 1200,
         height: 630,
-        alt: "GoKAnI AI Logo",
+        alt: "tattty Logo",
       },
     ],
     locale: "en_US",
@@ -42,8 +42,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "GoKAnI AI - Image Generator",
-    description: "Generate amazing images with GoKAnI AI (Flux)",
+    title: "tattty - Image Generator",
+    description: "Generate amazing images with tattty AI (Flux)",
     images: ["/gokanix1200x630.png"],
   },
 };

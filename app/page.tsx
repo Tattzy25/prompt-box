@@ -16,7 +16,6 @@ import { Info, ImageIcon, Loader2, Download, Link as LinkIcon, X, Copy, Share2 }
 import Lightbox from "yet-another-react-lightbox"
 import "yet-another-react-lightbox/styles.css"
 import { toast } from "sonner"
-import { generateImage } from "./actions"
 import { generateImages, editImages } from "@/lib/generate"
 import { AVAILABLE_MODELS, GENERATE_CREDITS_PER_OUTPUT } from "@/lib/models"
 import { useIframeAutoResize } from "@/hooks/use-iframe-autoresize"
@@ -67,9 +66,6 @@ function LabelWithTooltip({ id, label, tooltip }: { id?: string, label: string, 
 
 export default function Home() {
   const [numOutputs, setNumOutputs] = useState(4)
-  const [aspectRatio, setAspectRatio] = useState("1:1")
-  const [width, setWidth] = useState(1024)
-  const [height, setHeight] = useState(1024)
   const [isGenerated, setIsGenerated] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -84,20 +80,17 @@ export default function Home() {
   const [isPreparingShare, setIsPreparingShare] = useState(false)
 
   // Form State
-  const [replicateModelId, setReplicateModelId] = useState(AVAILABLE_MODELS[0].id)
+  const [ModelId, setModelId] = useState(AVAILABLE_MODELS[0].id)
   const [prompt, setPrompt] = useState("")
   const [triggerWord, setTriggerWord] = useState("")
   const [customerId, setCustomerId] = useState("")
   const [version, setVersion] = useState("")
-  const [sourceId, setSourceId] = useState<number | null>(null)
-  const [outputFormat, setOutputFormat] = useState("webp")
-  const [megapixels, setMegapixels] = useState("1")
   const [outputQuality, setOutputQuality] = useState(80)
   const [disableSafetyChecker] = useState(true)
   const [promptStrength, setPromptStrength] = useState(0.8)
 
   // Edit (Card 2) State
-  const [editReplicateModelId, setEditReplicateModelId] = useState(AVAILABLE_MODELS[0].id)
+  const [editModelId, setEditModelId] = useState(AVAILABLE_MODELS[0].id)
   const [editPrompt, setEditPrompt] = useState("")
   const [editNumOutputs, setEditNumOutputs] = useState(10)
   const [referenceImageInvalid, setReferenceImageInvalid] = useState(false)
@@ -118,19 +111,19 @@ export default function Home() {
     return { aspectRatio: `${w} / ${h}` }
   }
 
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search)
-    setTriggerWord(q.get("trigger_word") ?? "")
-    setCustomerId(q.get("customer_id") ?? "")
-    setVersion(q.get("version") ?? "")
-    const sid = q.get("source_id")
-    setSourceId(sid ? Number(sid) : null)
-  }, [])
+    useEffect(() => {
+      const q = new URLSearchParams(window.location.search);
+      setTriggerWord(q.get("trigger_word") ?? "");
+      setCustomerId(q.get("customer_id") ?? "");
+      setVersion(q.get("version") ?? "");
+    }, []); 
+
+
 
   useIframeAutoResize()
 
   const editModel =
-    AVAILABLE_MODELS.find((m) => m.id === editReplicateModelId) ?? AVAILABLE_MODELS[0]
+    AVAILABLE_MODELS.find((m) => m.id === editModelId) ?? AVAILABLE_MODELS[0]
 
   const totalCredits = (numOutputs || 0) * GENERATE_CREDITS_PER_OUTPUT
   const editTotalCredits = editNumOutputs * editModel.creditsPerOutput
@@ -173,7 +166,6 @@ export default function Home() {
       editUpload3: editPictures[2] ?? "",
       model: editModel.name,
       numOutputs: editNumOutputs,
-      sourceId,
       customerId,
       totalCredits: (editNumOutputs || 0) * editModel.creditsPerOutput,
     })
@@ -485,17 +477,17 @@ export default function Home() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
                 <div className="space-y-2 flex-1">
                   <LabelWithTooltip
-                    id="replicate_model_edit"
+                    id="model_edit"
                     label="Model"
-                    tooltip="Select the specific Replicate model to use for generation."
+                    tooltip="Select the specific model to use for generation."
                   />
                   <Select
-                    value={editReplicateModelId}
+                    value={editModelId}
                     onValueChange={(val: string) =>
-                      setEditReplicateModelId(val)
+                      setEditModelId(val)
                     }
                   >
-                    <SelectTrigger id="replicate_model_edit">
+                    <SelectTrigger id="model_edit">
                       <SelectValue placeholder="Select model" />
                     </SelectTrigger>
                     <SelectContent>

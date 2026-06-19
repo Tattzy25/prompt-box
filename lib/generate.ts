@@ -15,7 +15,6 @@ export async function generateImages(params: {
     body: JSON.stringify({
       prompt,
       version,
-      source_id: sourceId,
       numOutputs,
       uploads: referenceImage ?? "",
       customer_id: customerId,
@@ -33,7 +32,6 @@ export async function editImages(params: {
   editUpload3: string
   model: string
   numOutputs: number
-  sourceId: number | null
   customerId: string
   totalCredits: number
 }) {
@@ -44,7 +42,6 @@ export async function editImages(params: {
     editUpload3,
     model,
     numOutputs,
-    sourceId,
     customerId,
     totalCredits,
   } = params
@@ -59,7 +56,6 @@ export async function editImages(params: {
       edit_upload3: editUpload3,
       model,
       numOutputs,
-      source_id: sourceId,
       customer_id: customerId,
       total_credits: String(totalCredits),
     }),
