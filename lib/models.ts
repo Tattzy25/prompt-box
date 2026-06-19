@@ -17,7 +17,7 @@ export const AVAILABLE_MODELS: AvailableModel[] = [
     name: "See Dream - 5",
     description:
       "Seedream 5.0 lite: image generation with built-in reasoning, example-based editing, and deep domain knowledge",
-    maxOutputs: 10,
+    maxOutputs: 6,
     maxUploads: 3,
     creditsPerOutput: 2,
   },

@@ -151,13 +151,17 @@ export default function Home() {
       customerId,
       totalCredits,
     })
-    setGeneratedImages(data.urls ?? [])
+    setGeneratedImages(data.urls)
     setIsGenerated(true)
     setIsLoading(false)
   }
 
   const handleEdit = async () => {
     if (isEditing) return
+    if (editPrompt.trim().length < 10) {
+      toast.error("Prompt must be at least 10 characters")
+      return
+    }
     setIsEditing(true)
     setIsGenerated(false)
     setGeneratedImages([])
@@ -316,7 +320,7 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-              <div className="space-y-2 flex-1 min-w-0">
+              <div className="space-y-2 flex-1">
                 <LabelWithTooltip
                   label="Trigger"
                   tooltip='A trigger word is a "secret password" required to activate the Model specific training and generate the exact image style.'
@@ -349,7 +353,7 @@ export default function Home() {
                     min={1}
                     max={4}
                     value={numOutputs}
-                    onChange={(e) => setNumOutputs(parseInt(e.target.value) || 1)}
+                    onChange={(e) => setNumOutputs(parseInt(e.target.value))}
                   />
                 </div>
                 <div className="space-y-2 w-32">
@@ -457,9 +461,9 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-              <div className="space-y-2 flex-1 min-w-0">
-                <LabelWithTooltip
-                  id="replicate_model_edit"
+              <div className="space-y-2 flex-1">
+                <LabelWithTooltip 
+                  id="replicate_model_edit" 
                   label="Model" 
                   tooltip="Select the specific Replicate model to use for generation." 
                 />
@@ -493,7 +497,7 @@ export default function Home() {
                     min={1} 
                     max={editModel.maxOutputs} 
                     value={editNumOutputs}
-                    onChange={(e) => setEditNumOutputs(parseInt(e.target.value) || 1)}
+                    onChange={(e) => setEditNumOutputs(parseInt(e.target.value))}
                   />
                 </div>
                 <div className="space-y-2 w-32">
