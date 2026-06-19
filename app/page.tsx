@@ -18,7 +18,7 @@ import Lightbox from "yet-another-react-lightbox"
 import "yet-another-react-lightbox/styles.css"
 import { toast } from "sonner"
 import { generateImage } from "./actions"
-import { generateImages } from "@/lib/generate"
+import { generateImages, editImages } from "@/lib/generate"
 import { AVAILABLE_MODELS, GENERATE_CREDITS_PER_OUTPUT } from "@/lib/models"
 import { useIframeAutoResize } from "@/hooks/use-iframe-autoresize"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
@@ -137,11 +137,6 @@ export default function Home() {
   const editTotalCredits = editNumOutputs * editModel.creditsPerOutput
   const handleGenerate = async () => {
     if (isLoading) return // Prevent double clicks
-    
-    if (prompt.trim().length < 10) {
-      toast.error("Prompt must be at least 10 characters")
-      return
-    }
 
     setIsLoading(true)
     setIsGenerated(false)
@@ -156,46 +151,30 @@ export default function Home() {
       customerId,
       totalCredits,
     })
-    setGeneratedImages(data.urls)
+    setGeneratedImages(data.urls ?? [])
     setIsGenerated(true)
     setIsLoading(false)
   }
 
   const handleEdit = async () => {
     if (isEditing) return
-    if (editPrompt.trim().length < 10) {
-      toast.error("Prompt must be at least 10 characters")
-      return
-    }
     setIsEditing(true)
     setIsGenerated(false)
     setGeneratedImages([])
-    const finalModelId = editReplicateModelId
-    const formData = new FormData()
-    formData.append("replicate_model_id", finalModelId)
-    formData.append("prompt", editPrompt)
-    formData.append("aspect_ratio", aspectRatio)
-    formData.append("output_format", outputFormat)
-    formData.append("num_outputs", editNumOutputs.toString())
-    formData.append("width", width.toString())
-    formData.append("height", height.toString())
-    formData.append("megapixels", megapixels)
-    formData.append("output_quality", outputQuality.toString())
-    if (disableSafetyChecker) formData.append("disable_safety_checker", "on")
-    formData.append("prompt_strength", promptStrength.toString())
-    formData.append("customer_id", customerId)
-    formData.append("version", version)
-    formData.append("source_id", sourceId?.toString() ?? "")
-    editPictures.forEach((url, i) => formData.append(`edit_upload${i + 1}`, url))
 
-    const result = await generateImage(formData)
-    if (result.success) {
-      setGeneratedImages(Array.isArray(result.output) ? result.output : [result.output])
-      setIsGenerated(true)
-    } else {
-      console.error(result.error)
-      toast.error(result.error)
-    }
+    const data = await editImages({
+      editPrompt,
+      editUpload1: editPictures[0] ?? "",
+      editUpload2: editPictures[1] ?? "",
+      editUpload3: editPictures[2] ?? "",
+      model: editModel.name,
+      numOutputs: editNumOutputs,
+      sourceId,
+      customerId,
+      totalCredits: (editNumOutputs || 0) * editModel.creditsPerOutput,
+    })
+    setGeneratedImages(data.urls)
+    setIsGenerated(true)
     setIsEditing(false)
   }
 
@@ -337,7 +316,7 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-              <div className="space-y-2 flex-1">
+              <div className="space-y-2 flex-1 min-w-0">
                 <LabelWithTooltip
                   label="Trigger"
                   tooltip='A trigger word is a "secret password" required to activate the Model specific training and generate the exact image style.'
@@ -370,7 +349,7 @@ export default function Home() {
                     min={1}
                     max={4}
                     value={numOutputs}
-                    onChange={(e) => setNumOutputs(parseInt(e.target.value))}
+                    onChange={(e) => setNumOutputs(parseInt(e.target.value) || 1)}
                   />
                 </div>
                 <div className="space-y-2 w-32">
@@ -478,9 +457,9 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-4 flex-1">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-              <div className="space-y-2 flex-1">
-                <LabelWithTooltip 
-                  id="replicate_model_edit" 
+              <div className="space-y-2 flex-1 min-w-0">
+                <LabelWithTooltip
+                  id="replicate_model_edit"
                   label="Model" 
                   tooltip="Select the specific Replicate model to use for generation." 
                 />
@@ -514,7 +493,7 @@ export default function Home() {
                     min={1} 
                     max={editModel.maxOutputs} 
                     value={editNumOutputs}
-                    onChange={(e) => setEditNumOutputs(parseInt(e.target.value))}
+                    onChange={(e) => setEditNumOutputs(parseInt(e.target.value) || 1)}
                   />
                 </div>
                 <div className="space-y-2 w-32">

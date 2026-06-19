@@ -16,7 +16,7 @@ export const AVAILABLE_MODELS: AvailableModel[] = [
     id: "See Dream - 5",
     name: "See Dream - 5",
     description:
-      "OpenAI's state-of-the-art image generation model. Create and edit images from text with strong instruction following, sharp text rendering, and detailed editing.",
+      "Seedream 5.0 lite: image generation with built-in reasoning, example-based editing, and deep domain knowledge",
     maxOutputs: 10,
     maxUploads: 3,
     creditsPerOutput: 2,
