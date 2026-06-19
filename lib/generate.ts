@@ -1,13 +1,12 @@
 export async function generateImages(params: {
   prompt: string
   version: string
-  sourceId: number | null
   numOutputs: number
   referenceImage: string | null
   customerId: string
   totalCredits: number
 }) {
-  const { prompt, version, sourceId, numOutputs, referenceImage, customerId, totalCredits } = params
+  const { prompt, version, numOutputs, referenceImage, customerId, totalCredits } = params
 
   const res = await fetch("https://api.tattty.com/", {
     method: "POST",

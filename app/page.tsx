@@ -38,7 +38,7 @@ function InfoHint({ children }: { children: React.ReactNode }) {
           className="h-4 w-4 text-muted-foreground cursor-pointer"
           onMouseEnter={() => setOpen(true)}
           onMouseLeave={() => setOpen(false)}
-          onClick={(e) => {
+          onClick={(e: React.MouseEvent) => {
             e.preventDefault()
             setOpen((o) => !o)
           }}
@@ -97,19 +97,6 @@ export default function Home() {
   const [editPictureInvalid, setEditPictureInvalid] = useState(false)
   const [referenceImage, setReferenceImage] = useState<string | null>(null)
   const [editPictures, setEditPictures] = useState<string[]>([])
-
-  const getDimensions = () => {
-    if (aspectRatio === "custom") return { w: width, h: height }
-    const [w, h] = aspectRatio.split(":").map(Number)
-    // Base scale on 1024px
-    return { w: 1024, h: Math.round(1024 * (h / w)) }
-  }
-
-  const getAspectRatioStyle = (ratio: string) => {
-    if (ratio === "custom") return { aspectRatio: `${width} / ${height}` }
-    const [w, h] = ratio.split(":").map(Number)
-    return { aspectRatio: `${w} / ${h}` }
-  }
 
     useEffect(() => {
       const q = new URLSearchParams(window.location.search);
@@ -292,14 +279,7 @@ export default function Home() {
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
   }
-
-  const { w, h } = getDimensions()
-  const slides = generatedImages.map((src) => ({
-    src,
-    width: w,
-    height: h,
-  }))
-
+  
   return (
     <div className="flex flex-col w-full">
       <div className="w-full py-10 px-[5px] space-y-8">
@@ -412,7 +392,7 @@ export default function Home() {
                         method: "POST",
                         headers: {
                           "X-File-Type": "image",
-                          "Content-Type": "image/png",
+                          "Content-Type": f.type,
                         },
                         body: f,
                       },
@@ -575,7 +555,7 @@ export default function Home() {
                             method: "POST",
                             headers: {
                               "X-File-Type": "image",
-                              "Content-Type": "image/png",
+                              "Content-Type": f.type,
                             },
                             body: f,
                           },
@@ -716,7 +696,7 @@ export default function Home() {
           open={lightboxOpen}
           close={() => setLightboxOpen(false)}
           index={lightboxIndex}
-          slides={slides}
+          slides={Slider}
         />
 
         <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
