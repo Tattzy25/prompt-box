@@ -89,6 +89,9 @@ export default function Home() {
   const [disableSafetyChecker] = useState(true)
   const [promptStrength, setPromptStrength] = useState(0.8)
 
+  // Default image output format for download and share actions
+  const outputFormat = "png"
+
   // Edit (Card 2) State
   const [editModelId, setEditModelId] = useState(AVAILABLE_MODELS[0].id)
   const [editPrompt, setEditPrompt] = useState("")
@@ -696,7 +699,8 @@ export default function Home() {
           open={lightboxOpen}
           close={() => setLightboxOpen(false)}
           index={lightboxIndex}
-          slides={Slider}
+          // Convert generated image URLs to Lightbox slide objects
+          slides={generatedImages.map((src) => ({ src }))}
         />
 
         <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
